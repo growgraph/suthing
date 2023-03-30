@@ -22,9 +22,20 @@ class TestMPNNBlocks(unittest.TestCase):
         print(fa(5))
         print(fa(-1))
 
+    def test_combine(self):
+        def a(x):
+            if x < 0:
+                raise ValueError("x should be non negative")
+            return x + 2
+
+        fa = time_it(secure_it(a))
+        print(fa(5))
+        print(fa(-1))
+
     def runTest(self):
         self.test_update()
         self.test_secure()
+        self.test_combine()
 
 
 if __name__ == "__main__":
