@@ -16,17 +16,35 @@ class SimpleReturn:
     exception: Exception | None = None
 
 
-@dataclasses.dataclass
 class Report:
-    elapsed: float | None = None
-    success: bool | None = None
-    exception: Exception | None = None
+    def __init__(self, *args, **kwargs):
+        self.hkey: str = kwargs.pop("hkey", None)
+        self.elapsed: float = kwargs.pop("elapsed", None)
+        self.success: bool = kwargs.pop("success", None)
+        self.exception: Exception = kwargs.pop("exception", None)
+
+    def __repr__(self):
+        s = ""
+        for k, v in self.__dict__.items():
+            s += f"{k} : {v.__repr__()} \n"
+        return s
 
 
-@dataclasses.dataclass
-class Return:
-    ret: Any
-    reports: dict[str, Report]
+class Return(Report):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ret: Any = kwargs.pop("ret", None)
+        self.reports: list[Report] = kwargs.pop("reports", [])
+
+    def __repr__(self):
+        s = ""
+        for k, v in self.__dict__.items():
+            s += f"{k} : {v.__repr__()} \n"
+        return s
+
+    def update(self, rets: list[Report]):
+        for r in rets:
+            self.reports += [Report(**r.__dict__)]
 
 
 def hash_args(*args, **kwargs):
@@ -87,18 +105,15 @@ def timeit(foo, arg_name=None):
     def wrapper(*args, **kwargs):
         with Timer() as timer:
             r = foo(*args, **kwargs)
+
         extra_str = derive_hid(arg_name, *args, **kwargs)
-        key = foo.__name__ + f"<{extra_str}>"
-        report = Report(elapsed=timer.elapsed)
+        hkey = foo.__name__ + f"<{extra_str}>"
         if isinstance(r, Return):
-            if key in r.reports:
-                r.reports[key].elapsed = timer.elapsed
-            else:
-                r.reports = {f"{key}:{q}": w for q, w in r.reports.items()}
-                r.reports[key] = report
-                r.ret = r
+            r.elapsed = timer.elapsed
+            if r.hkey is None:
+                r.hkey = hkey
         else:
-            r = Return(ret=r, reports={key: Report(elapsed=timer.elapsed)})
+            r = Return(ret=r, hkey=hkey, elapsed=timer.elapsed)
         return r
 
     return wrapper
@@ -108,22 +123,17 @@ def secureit(foo, arg_name=None):
     @functools.wraps(foo)
     def wrapper(*args, **kwargs):
         extra_str = derive_hid(arg_name, *args, **kwargs)
-        key = foo.__name__ + f"<{extra_str}>"
+        hkey = foo.__name__ + f"<{extra_str}>"
         try:
             r = foo(*args, **kwargs)
             if isinstance(r, Return):
-                if key in r.reports:
-                    r.reports[key].success = True
-                else:
-                    r.reports = {f"{key}:{q}": w for q, w in r.reports.items()}
-                    r.reports[key] = Report(success=True)
-                    r.ret = r
+                r.success = True
+                if r.hkey is None:
+                    r.hkey = hkey
             else:
-                r = Return(ret=r, reports={key: Report(success=True)})
+                r = Return(ret=r, hkey=hkey, success=True)
         except Exception as e:
-            r = Return(
-                ret=None, reports={key: Report(success=False, exception=e)}
-            )
+            r = Return(ret=None, hkey=hkey, success=False, exception=e)
         return r
 
     return wrapper
