@@ -7,14 +7,17 @@ sp = SProfiler()
 
 
 class TestDecorate(unittest.TestCase):
+
     def test_profile(self):
+
+        @profile
         def a(x):
             r = [x**2 for x in range(x)]
             return r
 
-        pa = profile(a, profiler=sp, arg_name="x")
-        r = pa(x=100000)
+        r = a(x=100000, _profiler=sp, _arg_name="x")
         k = list(sp.accumulator.keys())[0]
+        print(sp.accumulator)
         self.assertEqual(len(sp.accumulator[k]), 1)
 
     def runTest(self):

@@ -147,16 +147,22 @@ def secureit(foo, arg_name=None):
     return wrapper
 
 
-def profile(foo, profiler: SProfiler | None = None, arg_name=None):
+def profile(foo):
     @functools.wraps(foo)
     def wrapper(*args, **kwargs):
-        if profiler is not None:
+        _profiler = kwargs.pop("_profiler", None)
+        if _profiler is not None and not isinstance(_profiler, SProfiler):
+            raise TypeError(f"_profiler type should be SProfiler, got {type(_profiler)} instead")
+        _arg_name = kwargs.pop("_arg_name", None)
+        if _arg_name is not None and not isinstance(_arg_name, str):
+            raise TypeError(f"_arg_name type should be str, got {type(_arg_name)} instead")
+        if _profiler is not None:
             with Timer() as timer:
                 r = foo(*args, **kwargs)
 
-            extra_str = derive_hid(arg_name, *args, **kwargs)
+            extra_str = derive_hid(_arg_name, *args, **kwargs)
             hkey = foo.__name__ + f"{extra_str}"
-            profiler.accumulator[hkey] += [timer.elapsed]
+            _profiler.accumulator[hkey] += [timer.elapsed]
         else:
             r = foo(*args, **kwargs)
         return r
