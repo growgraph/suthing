@@ -75,7 +75,7 @@ class FileHandle:
             r = json.load(p)
         elif how == FileType.JSONLD:
             r = [json.loads(s.decode()) for s in p.readlines()]
-        elif how == FileType.JSONLD:
+        elif how == FileType.CSV:
             r = pd.read_csv(p, **kwargs)
         else:
             r = dict()
