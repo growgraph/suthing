@@ -77,7 +77,10 @@ def derive_hid(arg_names, *args, **kwargs):
                     [f"{arg_names}={kwargs.get(a, None)}" for a in arg_names]
                 )
             elif isinstance(arg_names, str):
-                extra = f"{arg_names}={kwargs.get(arg_names, None)}"
+                option_a = kwargs.get(arg_names, None)
+                if option_a is None and args:
+                    option_a = args[0]
+                extra = f"{arg_names}={option_a}"
             else:
                 raise TypeError(
                     "arg_names should be str or list of str,"
