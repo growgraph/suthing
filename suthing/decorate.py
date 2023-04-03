@@ -13,6 +13,10 @@ class SProfiler:
     def __init__(self):
         self.accumulator: defaultdict[str, list] = defaultdict(list)
 
+    def add_metric(self, hkey, metric_key=None, value=0):
+        self.accumulator[hkey] += [value]
+
+
 
 @dataclasses.dataclass
 class SimpleReturn:
@@ -175,7 +179,7 @@ def profile(_foo=None, _argnames=None):
                     r = foo(*args, **kwargs)
                 extra_str = derive_hid(_argnames, *args, **kwargs)
                 hkey = foo.__name__ + f"{extra_str}"
-                _profiler.accumulator[hkey] += [timer.elapsed]
+                _profiler.add_metric(hkey=hkey, value=timer.elapsed)
             else:
                 r = foo(*args, **kwargs)
             return r
