@@ -3,9 +3,15 @@ from __future__ import annotations
 import dataclasses
 import functools
 import hashlib
+from collections import defaultdict
 from typing import Any
 
 from suthing.timer import Timer
+
+
+class SProfiler:
+    def __init__(self):
+        self.accumulator: defaultdict[str, list] = defaultdict(list)
 
 
 @dataclasses.dataclass
@@ -60,14 +66,16 @@ def derive_hid(arg_name, *args, **kwargs):
     if arg_name is not None:
         if kwargs:
             extra = kwargs.get(arg_name, None)
+            extra = f"{arg_name}={extra}"
         else:
             extra = args[0] if args else None
+            extra = str(extra)
     else:
         extra = hash_args(*args, **kwargs)
-    extra_str = str(extra)
-    if len(extra_str) > 20:
-        extra_str = extra_str[:8]
-    return extra_str
+        if len(extra) > 20:
+            extra = extra[:8]
+    extra = f"({extra})"
+    return extra
 
 
 def simple_timeit(foo):
@@ -134,6 +142,23 @@ def secureit(foo, arg_name=None):
                 r = Return(ret=r, hkey=hkey, success=True)
         except Exception as e:
             r = Return(ret=None, hkey=hkey, success=False, exception=e)
+        return r
+
+    return wrapper
+
+
+def profile(foo, profiler: SProfiler | None = None, arg_name=None):
+    @functools.wraps(foo)
+    def wrapper(*args, **kwargs):
+        if profiler is not None:
+            with Timer() as timer:
+                r = foo(*args, **kwargs)
+
+            extra_str = derive_hid(arg_name, *args, **kwargs)
+            hkey = foo.__name__ + f"{extra_str}"
+            profiler.accumulator[hkey] += [timer.elapsed]
+        else:
+            r = foo(*args, **kwargs)
         return r
 
     return wrapper

@@ -3,6 +3,8 @@ import os
 import unittest
 from pprint import pprint
 
+import pandas as pd
+
 from suthing.file_handle import FileHandle
 
 
@@ -30,10 +32,16 @@ class TestFH(unittest.TestCase):
         path = os.path.join(self.cpath, f"./data/example.jsonld")
         FileHandle.dump(self.ref_json, path)
 
+    def test_csv_dump(self):
+        df = pd.DataFrame([[1, 1, 1]], columns=["a", "b", "c"])
+        path = os.path.join(self.cpath, f"./data/example.csv")
+        FileHandle.dump(df, path)
+
     def runTest(self):
         self.test_jsonld()
         self.test_jsonldgz()
         self.test_dump()
+        self.test_csv_dump()
 
 
 if __name__ == "__main__":
