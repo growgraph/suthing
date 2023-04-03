@@ -66,11 +66,16 @@ def derive_hid(arg_names, *args, **kwargs):
     if arg_names is not None:
         if kwargs:
             if isinstance(arg_names, list):
-                extra = ",".join([f"{arg_names}={kwargs.get(a, None)}" for a in arg_names])
+                extra = ",".join(
+                    [f"{arg_names}={kwargs.get(a, None)}" for a in arg_names]
+                )
             elif isinstance(arg_names, str):
                 extra = f"{arg_names}={kwargs.get(arg_names, None)}"
             else:
-                raise TypeError(f"arg_names should be str or list of str, {type(arg_names)} provided")
+                raise TypeError(
+                    "arg_names should be str or list of str,"
+                    f" {type(arg_names)} provided"
+                )
         else:
             extra = f"{args[0]}"
     else:
@@ -156,9 +161,15 @@ def profile(_foo=None, _argnames=None):
         def decorate_with_timing(*args, **kwargs):
             _profiler = kwargs.get("_profiler", None)
             if _profiler is not None and not isinstance(_profiler, SProfiler):
-                raise TypeError(f"_profiler type should be SProfiler, got {type(_profiler)} instead")
+                raise TypeError(
+                    "_profiler type should be SProfiler, got"
+                    f" {type(_profiler)} instead"
+                )
             if _argnames is not None and not isinstance(_argnames, str):
-                raise TypeError(f"_arg_name type should be str, got {type(_argnames)} instead")
+                raise TypeError(
+                    "_arg_name type should be str, got"
+                    f" {type(_argnames)} instead"
+                )
             if _profiler is not None:
                 with Timer() as timer:
                     r = foo(*args, **kwargs)
@@ -168,7 +179,9 @@ def profile(_foo=None, _argnames=None):
             else:
                 r = foo(*args, **kwargs)
             return r
+
         return decorate_with_timing
+
     if _foo is None:
         return wrapper
     else:

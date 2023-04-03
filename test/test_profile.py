@@ -3,8 +3,8 @@ import unittest
 from suthing import Report, Return, secureit, timeit
 from suthing.decorate import SProfiler, profile
 
-class TestDecorate(unittest.TestCase):
 
+class TestDecorate(unittest.TestCase):
     def test_profile(self):
         sp = SProfiler()
 
@@ -17,7 +17,6 @@ class TestDecorate(unittest.TestCase):
         k = list(sp.accumulator.keys())[0]
         print(sp.accumulator)
         self.assertEqual(len(sp.accumulator[k]), 1)
-
 
     def test_profile_nested(self):
         sp = SProfiler()
