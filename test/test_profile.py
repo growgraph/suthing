@@ -14,9 +14,9 @@ class TestDecorate(unittest.TestCase):
             return r
 
         r = a(x=100000, _profiler=sp)
-        k = list(sp.accumulator.keys())[0]
-        print(sp.accumulator)
-        self.assertEqual(len(sp.accumulator[k]), 1)
+        k = list(sp.view_stats().keys())[0]
+        print(sp._accumulator)
+        self.assertEqual(len(sp.view_stats()[k]), 1)
 
     def test_profile_nested(self):
         sp = SProfiler()
@@ -33,8 +33,8 @@ class TestDecorate(unittest.TestCase):
             return r
 
         r = b(r=[100000, 500, 10], _profiler=sp)
-        k = list(sp.accumulator.keys())[0]
-        print(sp.accumulator)
+        k = list(sp.view_stats().keys())[0]
+        print(sp.view_stats())
         # self.assertEqual(len(sp.accumulator[k]), 1)
 
     def runTest(self):

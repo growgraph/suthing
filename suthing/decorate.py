@@ -4,6 +4,7 @@ import dataclasses
 import functools
 import hashlib
 from collections import defaultdict
+from copy import deepcopy
 from typing import Any
 
 from suthing.timer import Timer
@@ -11,10 +12,13 @@ from suthing.timer import Timer
 
 class SProfiler:
     def __init__(self):
-        self.accumulator: defaultdict[str, list] = defaultdict(list)
+        self._accumulator: defaultdict[str, list] = defaultdict(list)
 
     def add_metric(self, hkey, metric_key=None, value=0):
-        self.accumulator[hkey] += [value]
+        self._accumulator[hkey] += [value]
+
+    def view_stats(self):
+        return deepcopy(self._accumulator)
 
 
 @dataclasses.dataclass
@@ -163,11 +167,6 @@ def profile(_foo=None, _argnames=None):
         @functools.wraps(foo)
         def decorate_with_timing(*args, **kwargs):
             _profiler = kwargs.get("_profiler", None)
-            if _profiler is not None and not isinstance(_profiler, SProfiler):
-                raise TypeError(
-                    "_profiler type should be SProfiler, got"
-                    f" {type(_profiler)} instead"
-                )
             if _argnames is not None and not isinstance(_argnames, str):
                 raise TypeError(
                     "_arg_name type should be str, got"
