@@ -1,3 +1,9 @@
+import logging
+from collections.abc import Iterable
+
+logger = logging.getLogger(__name__)
+
+
 excluded_types = (str, dict)
 
 
