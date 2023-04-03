@@ -84,11 +84,11 @@ class FileHandle:
     @classmethod
     def load(
         cls,
-        how,
         ppath=None,
         pname=None,
         compression=None,
         fpath=None,
+        how=FileType.YAML,
         **kwargs,
     ):
         if fpath is None:
