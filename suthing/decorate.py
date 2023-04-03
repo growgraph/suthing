@@ -17,7 +17,6 @@ class SProfiler:
         self.accumulator[hkey] += [value]
 
 
-
 @dataclasses.dataclass
 class SimpleReturn:
     ret: Any
