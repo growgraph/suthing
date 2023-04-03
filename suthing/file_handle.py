@@ -4,6 +4,7 @@ import json
 import logging
 import pickle
 import pkgutil
+from enum import Enum
 from os.path import expanduser
 
 import pandas as pd
@@ -12,35 +13,51 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
+class FileType(str, Enum):
+    YAML = "yaml"
+    JSON = "json"
+    JSONLD = "jsonld"
+    PICKLE = "pkl"
+    CSV = "csv"
+
+
 class FileHandle:
     @classmethod
     def _find_mode(cls, lemma):
         if lemma in ["yml", "yaml"]:
-            return "yaml"
+            return FileType.YAML
         elif lemma == "json":
-            return "json"
+            return FileType.JSON
+        elif lemma == "jsonld":
+            return FileType.JSONLD
         elif lemma in ["pkl", "pickle"]:
-            return "pkl"
+            return FileType.PICKLE
         elif lemma in ["csv"]:
-            return "csv"
+            return FileType.CSV
         else:
             return None
 
     @classmethod
     def _dump_pointer(cls, item, p, how, bytes_=True):
-        if how == "pkl":
+        if how == FileType.PICKLE:
             pickle.dump(item, p, pickle.HIGHEST_PROTOCOL)
-        elif how == "yaml":
+        elif how == FileType.YAML:
             yc = yaml.dump(item)
             if bytes_:
                 yc = yc.encode("utf-8")
             p.write(yc)
-        elif how == "json":
+        elif how == FileType.JSON:
             jc = json.dumps(item, indent=2) + "\n"
             if bytes_:
                 jc = jc.encode("utf-8")
             p.write(jc)
-        elif how == "csv" and (
+        elif how == FileType.JSONLD:
+            for subitem in item:
+                jc = json.dumps(subitem) + "\n"
+                if bytes_:
+                    jc = jc.encode("utf-8")
+                p.write(jc)
+        elif how == FileType.CSV and (
             isinstance(item, pd.DataFrame) or isinstance(item, pd.Series)
         ):
             r = item.to_csv()
@@ -50,13 +67,15 @@ class FileHandle:
 
     @classmethod
     def _open_pointer(cls, p, how, **kwargs):
-        if how == "pkl":
+        if how == FileType.PICKLE:
             r = pickle.load(p)
-        elif how == "yaml":
+        elif how == FileType.YAML:
             r = yaml.load(p, Loader=yaml.FullLoader)
-        elif how == "json":
+        elif how == FileType.JSON:
             r = json.load(p)
-        elif how == "csv":
+        elif how == FileType.JSONLD:
+            r = [json.loads(s.decode()) for s in p.readlines()]
+        elif how == FileType.JSONLD:
             r = pd.read_csv(p, **kwargs)
         else:
             r = dict()
@@ -65,9 +84,9 @@ class FileHandle:
     @classmethod
     def load(
         cls,
+        how,
         ppath=None,
         pname=None,
-        how="yaml",
         compression=None,
         fpath=None,
         **kwargs,
