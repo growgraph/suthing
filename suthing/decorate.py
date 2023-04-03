@@ -62,14 +62,17 @@ def hash_args(*args, **kwargs):
     return m.hexdigest()
 
 
-def derive_hid(arg_name, *args, **kwargs):
-    if arg_name is not None:
+def derive_hid(arg_names, *args, **kwargs):
+    if arg_names is not None:
         if kwargs:
-            extra = kwargs.get(arg_name, None)
-            extra = f"{arg_name}={extra}"
+            if isinstance(arg_names, list):
+                extra = ",".join([f"{arg_names}={kwargs.get(a, None)}" for a in arg_names])
+            elif isinstance(arg_names, str):
+                extra = f"{arg_names}={kwargs.get(arg_names, None)}"
+            else:
+                raise TypeError(f"arg_names should be str or list of str, {type(arg_names)} provided")
         else:
-            extra = args[0] if args else None
-            extra = str(extra)
+            extra = f"{args[0]}"
     else:
         extra = hash_args(*args, **kwargs)
         if len(extra) > 20:
@@ -147,24 +150,26 @@ def secureit(foo, arg_name=None):
     return wrapper
 
 
-def profile(foo):
-    @functools.wraps(foo)
-    def wrapper(*args, **kwargs):
-        _profiler = kwargs.pop("_profiler", None)
-        if _profiler is not None and not isinstance(_profiler, SProfiler):
-            raise TypeError(f"_profiler type should be SProfiler, got {type(_profiler)} instead")
-        _arg_name = kwargs.pop("_arg_name", None)
-        if _arg_name is not None and not isinstance(_arg_name, str):
-            raise TypeError(f"_arg_name type should be str, got {type(_arg_name)} instead")
-        if _profiler is not None:
-            with Timer() as timer:
+def profile(_foo=None, _argnames=None):
+    def wrapper(foo):
+        @functools.wraps(foo)
+        def decorate_with_timing(*args, **kwargs):
+            _profiler = kwargs.get("_profiler", None)
+            if _profiler is not None and not isinstance(_profiler, SProfiler):
+                raise TypeError(f"_profiler type should be SProfiler, got {type(_profiler)} instead")
+            if _argnames is not None and not isinstance(_argnames, str):
+                raise TypeError(f"_arg_name type should be str, got {type(_argnames)} instead")
+            if _profiler is not None:
+                with Timer() as timer:
+                    r = foo(*args, **kwargs)
+                extra_str = derive_hid(_argnames, *args, **kwargs)
+                hkey = foo.__name__ + f"{extra_str}"
+                _profiler.accumulator[hkey] += [timer.elapsed]
+            else:
                 r = foo(*args, **kwargs)
-
-            extra_str = derive_hid(_arg_name, *args, **kwargs)
-            hkey = foo.__name__ + f"{extra_str}"
-            _profiler.accumulator[hkey] += [timer.elapsed]
-        else:
-            r = foo(*args, **kwargs)
-        return r
-
-    return wrapper
+            return r
+        return decorate_with_timing
+    if _foo is None:
+        return wrapper
+    else:
+        return wrapper(_foo)
