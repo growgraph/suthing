@@ -1,7 +1,6 @@
 import unittest
-from functools import reduce
 
-from suthing import Report, Return, secureit, timeit
+from suthing import secureit, timeit
 
 
 class TestDecorate(unittest.TestCase):

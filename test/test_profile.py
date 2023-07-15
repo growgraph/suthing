@@ -1,6 +1,5 @@
 import unittest
 
-from suthing import Report, Return, secureit, timeit
 from suthing.decorate import SProfiler, profile
 
 
