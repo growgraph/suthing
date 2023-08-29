@@ -1,4 +1,4 @@
-RUNTEST=python -m unittest discover -v
+RUNTEST=pytest
 
 .PHONY: test
 test:

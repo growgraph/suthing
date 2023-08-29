@@ -1,4 +1,4 @@
-fail_fast: true
+fail_fast: false
 
 repos:
 -   repo: https://github.com/myint/autoflake
@@ -14,7 +14,7 @@ repos:
     rev: 23.7.0
     hooks:
     -   id: black
-        args: [--diff, --preview, -l 79]
+        args: [--preview, -l 79]
 
 -   repo: https://github.com/PyCQA/isort
     rev: 5.12.0
@@ -23,14 +23,14 @@ repos:
         args:
         -   --line-length=79
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
+    rev: v1.5.1
     hooks:
     -   id: mypy
         exclude: (^test/)
         args: [--show-error-codes]
         additional_dependencies: [types-requests, types-python-dateutil, types-waitress, types-PyYAML, pandas-stubs]
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.9.0
+    rev: v2.10.0
     hooks:
     -   id: pretty-format-yaml
         args: [--autofix, --indent, '4', --preserve-quotes]
@@ -43,7 +43,7 @@ repos:
         args: [--autofix, --indent, '4', --no-sort-keys]
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.9.0
+    rev: v2.10.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix]
