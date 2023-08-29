@@ -19,6 +19,7 @@ class FileType(str, Enum):
     JSONLD = "jsonld"
     PICKLE = "pkl"
     CSV = "csv"
+    TXT = "txt"
 
 
 class FileHandle:
@@ -35,7 +36,7 @@ class FileHandle:
         elif lemma in ["csv"]:
             return FileType.CSV
         else:
-            return None
+            return FileType.TXT
 
     @classmethod
     def _dump_pointer(cls, item, p, how, bytes_=True):
@@ -64,9 +65,13 @@ class FileHandle:
             if bytes_:
                 r = r.encode("utf-8")
             p.write(r)
+        elif how == FileType.TXT:
+            p.write(str(item))
 
     @classmethod
-    def _open_pointer(cls, p, how, **kwargs):
+    def _open_pointer(
+        cls, p: io.BytesIO | gzip.GzipFile, how: FileType, **kwargs
+    ):
         if how == FileType.PICKLE:
             r = pickle.load(p)
         elif how == FileType.YAML:
@@ -76,7 +81,9 @@ class FileHandle:
         elif how == FileType.JSONLD:
             r = [json.loads(s.decode()) for s in p.readlines()]
         elif how == FileType.CSV:
-            r = pd.read_csv(p, **kwargs)
+            r = pd.read_csv(p, **kwargs)  # type: ignore[arg-type]
+        elif how == FileType.TXT:
+            r = p.read().decode()
         else:
             r = dict()
         return r
@@ -86,12 +93,14 @@ class FileHandle:
         cls,
         ppath=None,
         pname=None,
-        compression=None,
-        fpath=None,
         how=FileType.YAML,
         **kwargs,
     ):
-        if fpath is None:
+        compression = kwargs.pop("compression", None)
+        fpath = kwargs.pop("fpath", None)
+
+        # interpret as package load
+        if pname is not None:
             lemmas = pname.split(".")
             if lemmas[-1] == "gz":
                 compression = "gz"
@@ -101,7 +110,11 @@ class FileHandle:
             if how_:
                 how = how_
             bytes_ = pkgutil.get_data(ppath, pname)
+
+        # interpret as filesystem load
         else:
+            if fpath is None:
+                fpath = ppath
             fpath = expanduser(fpath)
             lemmas = fpath.split(".")
             if lemmas[-1] == "gz":
@@ -113,6 +126,7 @@ class FileHandle:
                 how = how_
             with open(fpath, "rb") as fp:
                 bytes_ = fp.read()
+
         if compression == "gz":
             with gzip.GzipFile(fileobj=io.BytesIO(bytes_), mode="r") as p:
                 r = cls._open_pointer(p, how, **kwargs)
