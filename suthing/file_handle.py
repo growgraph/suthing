@@ -9,6 +9,7 @@ from os.path import expanduser
 
 import pandas as pd
 import yaml
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class FileType(str, Enum):
     PICKLE = "pkl"
     CSV = "csv"
     TXT = "txt"
+    ENV = "env"
 
 
 class FileHandle:
@@ -35,6 +37,8 @@ class FileHandle:
             return FileType.PICKLE
         elif lemma in ["csv"]:
             return FileType.CSV
+        elif lemma in ["env"]:
+            return FileType.ENV
         else:
             return FileType.TXT
 
@@ -84,6 +88,12 @@ class FileHandle:
             r = pd.read_csv(p, **kwargs)  # type: ignore[arg-type]
         elif how == FileType.TXT:
             r = p.read().decode()
+        elif how == FileType.ENV:
+            if isinstance(p, io.BytesIO):
+                config = io.StringIO(p.getvalue().decode("UTF-8"))
+                r = load_dotenv(stream=config)
+            else:
+                raise ValueError(f"Will not read gzipped env files")
         else:
             r = dict()
         return r
@@ -93,7 +103,7 @@ class FileHandle:
         cls,
         ppath=None,
         pname=None,
-        how=FileType.YAML,
+        how: FileType = FileType.YAML,
         **kwargs,
     ):
         compression = kwargs.pop("compression", None)
@@ -127,6 +137,9 @@ class FileHandle:
             with open(fpath, "rb") as fp:
                 bytes_ = fp.read()
 
+        if bytes_ is None:
+            raise ValueError(f"None received as Bytes")
+
         if compression == "gz":
             with gzip.GzipFile(fileobj=io.BytesIO(bytes_), mode="r") as p:
                 r = cls._open_pointer(p, how, **kwargs)
@@ -136,7 +149,7 @@ class FileHandle:
         return r
 
     @classmethod
-    def dump(cls, item, path, how="yaml"):
+    def dump(cls, item, path, how: FileType = FileType.YAML):
         """
 
         :param item:
@@ -154,7 +167,7 @@ class FileHandle:
             how_ = cls._find_mode(lemmas[-1])
         if how_:
             how = how_
-        if how == "pkl":
+        if how == FileType.PICKLE:
             mode = "wb"
         else:
             mode = "w"

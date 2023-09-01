@@ -13,6 +13,14 @@ def parameters():
     return [cpath, ref_json]
 
 
+def test_env(parameters):
+    cpath, rj = parameters
+    path = os.path.join(cpath, f"./data/example.env")
+    r = FileHandle.load(path)
+    port = os.getenv("ARANGO_PORT")
+    assert port == "8535"
+
+
 def test_jsonld(parameters):
     cpath, rj = parameters
     path = os.path.join(cpath, f"./data/example.jsonld")
