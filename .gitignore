@@ -76,7 +76,12 @@ notebooks/*Copy*
 reports/
 serialize/
 
+# cache
+.pytest_cache
+
+.mypy_cache
+
+
 # mypy
-.mypy_cache/
 .dmypy.json
 dmypy.json
