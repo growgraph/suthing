@@ -1,47 +1,35 @@
-import unittest
-
 from suthing.decorate import SProfiler, profile
 
 
-class TestDecorate(unittest.TestCase):
-    def test_profile(self):
-        sp = SProfiler()
+def test_profile():
+    sp = SProfiler()
 
-        @profile(_argnames="x")
-        def a(x, **kwargs):
-            r = [x**2 for x in range(x)]
-            return r
+    @profile(_argnames="x")
+    def a(x, **kwargs):
+        r = [x**2 for x in range(x)]
+        return r
 
-        r = a(x=100000, _profiler=sp)
-        k = list(sp.view_stats().keys())[0]
-        print(sp._accumulator)
-        self.assertEqual(len(sp.view_stats()[k]), 1)
-
-    def test_profile_nested(self):
-        sp = SProfiler()
-
-        @profile(_argnames="x")
-        def a(x, **kwargs):
-            r = [x**2 for x in range(x)]
-            return r
-
-        @profile
-        def b(r, **kwargs):
-            for v in r:
-                a(x=v, **kwargs)
-            return r
-
-        r = b(r=[100000, 500, 10], _profiler=sp)
-        k = list(sp.view_stats().keys())[0]
-        print(sp.view_stats())
-        # self.assertEqual(len(sp.accumulator[k]), 1)
-
-    def runTest(self):
-        # self.test_profile()
-        self.test_profile_nested()
+    r = a(x=100000, _profiler=sp)
+    k = list(sp.view_stats().keys())[0]
+    print(sp._accumulator)
+    assert len(sp.view_stats()[k]) == 1
 
 
-if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(TestDecorate())
-    unittest.TextTestRunner(verbosity=2).run(suite)
+def test_profile_nested():
+    sp = SProfiler()
+
+    @profile(_argnames="x")
+    def a(x, **kwargs):
+        r = [x**2 for x in range(x)]
+        return r
+
+    @profile
+    def b(r, **kwargs):
+        for v in r:
+            a(x=v, **kwargs)
+        return r
+
+    r = b(r=[100000, 500, 10], _profiler=sp)
+    k = list(sp.view_stats().keys())[0]
+    print(sp.view_stats())
+    # assert len(sp.accumulator[k]) == 1
