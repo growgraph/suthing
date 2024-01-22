@@ -15,38 +15,38 @@ def parameters():
 
 def test_env(parameters):
     cpath, rj = parameters
-    path = os.path.join(cpath, f"./data/example.env")
-    r = FileHandle.load(path)
+    path = os.path.join(cpath, "./data/example.env")
+    _ = FileHandle.load(path)
     port = os.getenv("ARANGO_PORT")
     assert port == "8535"
 
 
 def test_jsonld(parameters):
     cpath, rj = parameters
-    path = os.path.join(cpath, f"./data/example.jsonld")
+    path = os.path.join(cpath, "./data/example.jsonld")
     r = FileHandle.load("jsonld", fpath=path)
     assert rj == r
 
 
 def test_jsonldgz(parameters):
     cpath, rj = parameters
-    path = os.path.join(cpath, f"./data/example.jsonld.gz")
+    path = os.path.join(cpath, "./data/example.jsonld.gz")
     r = FileHandle.load("jsonld", fpath=path)
     assert rj == r
 
 
 def test_dump(parameters):
     cpath, ref_json = parameters
-    path = os.path.join(cpath, f"./data/example.jsonld.gz")
+    path = os.path.join(cpath, "./data/example.jsonld.gz")
     FileHandle.dump(ref_json, path)
-    path = os.path.join(cpath, f"./data/example.jsonld")
+    path = os.path.join(cpath, "./data/example.jsonld")
     FileHandle.dump(ref_json, path)
 
 
 def test_csv_dump(parameters):
     cpath, rj = parameters
     df = pd.DataFrame([[1, 1, 1]], columns=["a", "b", "c"])
-    path = os.path.join(cpath, f"./data/example.csv")
+    path = os.path.join(cpath, "./data/example.csv")
     FileHandle.dump(df, path)
 
 

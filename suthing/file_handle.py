@@ -73,9 +73,7 @@ class FileHandle:
             p.write(str(item))
 
     @classmethod
-    def _open_pointer(
-        cls, p: io.BytesIO | gzip.GzipFile, how: FileType, **kwargs
-    ):
+    def _open_pointer(cls, p: io.BytesIO | gzip.GzipFile, how: FileType, **kwargs):
         if how == FileType.PICKLE:
             r = pickle.load(p)
         elif how == FileType.YAML:
@@ -93,7 +91,7 @@ class FileHandle:
                 config = io.StringIO(p.getvalue().decode("UTF-8"))
                 r = load_dotenv(stream=config)
             else:
-                raise ValueError(f"Will not read gzipped env files")
+                raise ValueError("Will not read gzipped env files")
         else:
             r = dict()
         return r
@@ -138,7 +136,7 @@ class FileHandle:
                 bytes_ = fp.read()
 
         if bytes_ is None:
-            raise ValueError(f"None received as Bytes")
+            raise ValueError("None received as Bytes")
 
         if compression == "gz":
             with gzip.GzipFile(fileobj=io.BytesIO(bytes_), mode="r") as p:

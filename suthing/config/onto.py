@@ -4,16 +4,16 @@ from enum import Enum, EnumMeta
 from dataclass_wizard import JSONWizard
 
 
-class MetaEnum(EnumMeta):
-    def __contains__(cls, item):
+class EnumMetaWithContains(EnumMeta):
+    def __contains__(cls, item, **kwargs):
         try:
-            cls(item)
+            cls(item, **kwargs)
         except ValueError:
             return False
         return True
 
 
-class ConnectionKind(str, Enum, metaclass=MetaEnum):
+class ConnectionKind(str, Enum, metaclass=EnumMetaWithContains):
     ARANGO = "arango"
     NEO4J = "neo4j"
     WSGI = "wsgi"

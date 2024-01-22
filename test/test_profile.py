@@ -9,7 +9,7 @@ def test_profile():
         r = [x**2 for x in range(x)]
         return r
 
-    r = a(x=100000, _profiler=sp)
+    _ = a(x=100000, _profiler=sp)
     k = list(sp.view_stats().keys())[0]
     print(sp._accumulator)
     assert len(sp.view_stats()[k]) == 1
@@ -29,7 +29,7 @@ def test_profile_nested():
             a(x=v, **kwargs)
         return r
 
-    r = b(r=[100000, 500, 10], _profiler=sp)
-    k = list(sp.view_stats().keys())[0]
+    _ = b(r=[100000, 500, 10], _profiler=sp)
+    _ = list(sp.view_stats().keys())[0]
     print(sp.view_stats())
     # assert len(sp.accumulator[k]) == 1

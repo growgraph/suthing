@@ -50,8 +50,8 @@ def test_secure():
         return x + 2
 
     fa = secureit(a)
-    r = fa(5)
-    r = fa(-1)
+    _ = fa(5)
+    _ = fa(-1)
 
 
 def test_combine():
