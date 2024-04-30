@@ -18,7 +18,7 @@ keywords = ["suthing", "tools"]
 license = "BSD-3-Clause"
 name = "suthing"
 readme = "README.md"
-version = "0.2.7"
+version = "0.2.8"
 
 [tool.poetry.dependencies]
 dataclass-wizard = "^0.22.2"
