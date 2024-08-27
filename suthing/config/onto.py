@@ -63,18 +63,6 @@ class DBConnectionConfig(ProtoConnectionConfig):
 
     def __post_init__(self):
         super().__post_init__()
-        self.__identify_conn_type()
-
-    def __identify_conn_type(self):
-        """
-        relies mostly on ports
-        :return:
-        """
-        if self.connection_type is None:
-            if 8500 < int(self.port) < 8600:
-                self.connection_type = ConnectionKind.ARANGO
-            elif 7400 < int(self.port) < 7700:
-                self.connection_type = ConnectionKind.NEO4J
 
 
 @dataclasses.dataclass
@@ -98,9 +86,13 @@ class WSGIConfig(ProtoConnectionConfig):
 
 @dataclasses.dataclass
 class ArangoConnectionConfig(DBConnectionConfig):
-    pass
+    def __post_init__(self):
+        self.connection_type = ConnectionKind.ARANGO
+        super().__post_init__()
 
 
 @dataclasses.dataclass
 class Neo4jConnectionConfig(DBConnectionConfig):
-    pass
+    def __post_init__(self):
+        self.connection_type = ConnectionKind.NEO4J
+        super().__post_init__()
