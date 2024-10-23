@@ -18,12 +18,11 @@ keywords = ["suthing", "tools"]
 license = "BSD-3-Clause"
 name = "suthing"
 readme = "README.md"
-version = "0.2.9"
+version = "0.2.10"
 
 [tool.poetry.dependencies]
-dataclass-wizard = "^0.22.2"
+dataclass-wizard = "^0.23.0"
 pandas = "^2.0.3"
-pytest = "^7.4.0"
 python = "^3.10"
 python-dotenv = "^1.0.0"
 pyyaml = ">=3.10"
@@ -31,3 +30,4 @@ pyyaml = ">=3.10"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.3.3"
 pylint = "^3.0.3"
+pytest = "^8.3.3"
