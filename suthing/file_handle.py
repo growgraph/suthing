@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 def suffixes(fp: str | pathlib.Path):
     if isinstance(fp, str):
         fp = pathlib.Path(fp)
+    suffixes = fp.suffixes
+    if not suffixes and "." in fp.stem:
+        return [fp.stem]
     return fp.suffixes
 
 

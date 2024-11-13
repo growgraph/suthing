@@ -1,21 +1,21 @@
 import os
 
 import pandas as pd
-import pytest
 
 from suthing.file_handle import FileHandle
-
-
-@pytest.fixture()
-def parameters():
-    cpath = os.path.dirname(os.path.realpath(__file__))
-    ref_json = [{"a": "abc"}, {"b": "abc"}]
-    return [cpath, ref_json]
 
 
 def test_env(parameters):
     cpath, rj = parameters
     path = os.path.join(cpath, "./data/example.env")
+    _ = FileHandle.load(path)
+    port = os.getenv("ARANGO_PORT")
+    assert port == "8535"
+
+
+def test_env_raw(parameters):
+    cpath, rj = parameters
+    path = os.path.join(cpath, "./data/.env")
     _ = FileHandle.load(path)
     port = os.getenv("ARANGO_PORT")
     assert port == "8535"
