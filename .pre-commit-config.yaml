@@ -2,7 +2,7 @@ fail_fast: false
 
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.0
+    rev: v0.7.3
     hooks:
     -   id: ruff
         args: [--fix, --ignore, E722, --exclude, "__init__.py"]

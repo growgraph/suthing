@@ -2,16 +2,22 @@ import gzip
 import io
 import json
 import logging
+import pathlib
 import pickle
 import pkgutil
 from enum import Enum
-from os.path import expanduser
 
 import pandas as pd
 import yaml
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+
+
+def suffixes(fp: str | pathlib.Path):
+    if isinstance(fp, str):
+        fp = pathlib.Path(fp)
+    return fp.suffixes
 
 
 class FileType(str, Enum):
@@ -27,17 +33,17 @@ class FileType(str, Enum):
 class FileHandle:
     @classmethod
     def _find_mode(cls, lemma):
-        if lemma in ["yml", "yaml"]:
+        if lemma in [".yml", ".yaml"]:
             return FileType.YAML
-        elif lemma == "json":
+        elif lemma == ".json":
             return FileType.JSON
-        elif lemma == "jsonld":
+        elif lemma == ".jsonld":
             return FileType.JSONLD
-        elif lemma in ["pkl", "pickle"]:
+        elif lemma in [".pkl", ".pickle"]:
             return FileType.PICKLE
-        elif lemma in ["csv"]:
+        elif lemma in [".csv"]:
             return FileType.CSV
-        elif lemma in ["env"]:
+        elif lemma in [".env"]:
             return FileType.ENV
         else:
             return FileType.TXT
@@ -99,33 +105,50 @@ class FileHandle:
     @classmethod
     def load(
         cls,
-        ppath=None,
-        pname=None,
+        ppath: str | pathlib.Path | None = None,
+        pname: str | None = None,
         how: FileType = FileType.YAML,
         **kwargs,
     ):
-        compression = kwargs.pop("compression", None)
-        fpath = kwargs.pop("fpath", None)
+        """
 
-        # interpret as package load
+        :param ppath:
+        :param pname:
+        :param how:
+        :param kwargs:
+        :return:
+        """
+
+        compression = kwargs.pop("compression", None)
+        fpath: str | pathlib.Path | None = kwargs.pop("fpath", None)
+
+        # assume loading as a package
         if pname is not None:
-            lemmas = pname.split(".")
-            if lemmas[-1] == "gz":
+            lemmas = suffixes(pname)
+            if lemmas[-1] == ".gz":
                 compression = "gz"
                 how_ = cls._find_mode(lemmas[-2])
             else:
                 how_ = cls._find_mode(lemmas[-1])
             if how_:
                 how = how_
-            bytes_ = pkgutil.get_data(ppath, pname)
+            if ppath is not None and isinstance(ppath, str):
+                bytes_ = pkgutil.get_data(ppath, pname)
+            else:
+                raise ValueError(
+                    "package name provided, package path (as a string) needed"
+                )
 
         # interpret as filesystem load
         else:
             if fpath is None:
-                fpath = ppath
-            fpath = expanduser(fpath)
-            lemmas = fpath.split(".")
-            if lemmas[-1] == "gz":
+                if ppath is not None:
+                    fpath = ppath
+                else:
+                    raise ValueError("either fpath or ppath should be provided")
+            fpath = pathlib.Path(fpath).expanduser().as_posix()
+            lemmas = suffixes(fpath)
+            if lemmas[-1] == ".gz":
                 compression = "gz"
                 how_ = cls._find_mode(lemmas[-2])
             else:
@@ -147,7 +170,7 @@ class FileHandle:
         return r
 
     @classmethod
-    def dump(cls, item, path, how: FileType = FileType.YAML):
+    def dump(cls, item, path: str | pathlib.Path, how: FileType = FileType.YAML):
         """
 
         :param item:
@@ -155,9 +178,10 @@ class FileHandle:
         :param how:
         :return:
         """
-        lemmas = path.split(".")
-        path = expanduser(path)
-        if lemmas[-1] == "gz":
+
+        lemmas = suffixes(path)
+        path = pathlib.Path(path).expanduser().as_posix()
+        if lemmas[-1] == ".gz":
             compression = "gz"
             how_ = cls._find_mode(lemmas[-2])
         else:
