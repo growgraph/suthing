@@ -18,10 +18,10 @@ keywords = ["suthing", "tools"]
 license = "BSD-3-Clause"
 name = "suthing"
 readme = "README.md"
-version = "0.2.11"
+version = "0.2.12"
 
 [tool.poetry.dependencies]
-dataclass-wizard = "^0.23.0"
+dataclass-wizard = "^0.28.0"
 pandas = "^2.0.3"
 python = "^3.10"
 python-dotenv = "^1.0.0"
