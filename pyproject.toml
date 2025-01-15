@@ -8,26 +8,29 @@ ignore_missing_imports = true
 [tool.poetry]
 authors = ["Alexander Belikov <abelikov@gmail.com>"]
 classifiers = [
-  "License :: OSI Approved :: BSD3  License",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python"
 ]
 description = "Small Useful Things : python package for convenient primitives"
 homepage = "https://github.com/growgraph/suthing"
 keywords = ["suthing", "tools"]
-license = "BSD-3-Clause"
+license = "MIT"
 name = "suthing"
 readme = "README.md"
-version = "0.2.12"
+version = "0.3.0"
 
 [tool.poetry.dependencies]
-dataclass-wizard = "^0.28.0"
+dataclass-wizard = "^0.34.0"
 pandas = "^2.0.3"
 python = "^3.10"
 python-dotenv = "^1.0.0"
 pyyaml = ">=3.10"
 
 [tool.poetry.group.dev.dependencies]
+myst-parser = "^4.0.0"
 pre-commit = "^3.3.3"
 pylint = "^3.0.3"
 pytest = "^8.3.3"
+sphinx = "^8.1.3"
+sphinx-rtd-theme = "^3.0.2"

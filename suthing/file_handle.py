@@ -1,3 +1,9 @@
+"""Utilities for handling different file types and formats.
+
+This module provides a flexible interface for reading and writing various file formats
+including YAML, JSON, CSV, pickle and others. Supports both regular and gzipped files.
+"""
+
 import gzip
 import io
 import json
@@ -15,6 +21,14 @@ logger = logging.getLogger(__name__)
 
 
 def suffixes(fp: str | pathlib.Path):
+    """Extract file suffixes from a path.
+
+    Args:
+        fp: File path as string or Path object
+
+    Returns:
+        List of suffix strings
+    """
     if isinstance(fp, str):
         fp = pathlib.Path(fp)
     suffixes = fp.suffixes
@@ -24,6 +38,8 @@ def suffixes(fp: str | pathlib.Path):
 
 
 class FileType(str, Enum):
+    """Supported file types for reading and writing."""
+
     YAML = "yaml"
     JSON = "json"
     JSONLD = "jsonld"
@@ -34,8 +50,18 @@ class FileType(str, Enum):
 
 
 class FileHandle:
+    """Main class for handling file operations across different formats."""
+
     @classmethod
-    def _find_mode(cls, lemma):
+    def _find_mode(cls, lemma: str):
+        """Determine file type from file extension.
+
+        Args:
+            lemma: File extension string
+
+        Returns:
+            FileType enum value corresponding to the extension
+        """
         if lemma in [".yml", ".yaml"]:
             return FileType.YAML
         elif lemma == ".json":
@@ -52,37 +78,58 @@ class FileHandle:
             return FileType.TXT
 
     @classmethod
-    def _dump_pointer(cls, item, p, how, bytes_=True):
+    def _dump_pointer(cls, item, p, how: FileType, bytes_: bool = True) -> None:
+        """Write data to file pointer in specified format.
+
+        Args:
+            item: Data to write
+            p: File pointer
+            how: FileType indicating format to write in
+            bytes_: Whether to write in bytes mode
+        """
         if how == FileType.PICKLE:
             pickle.dump(item, p, pickle.HIGHEST_PROTOCOL)
         elif how == FileType.YAML:
             yc = yaml.dump(item)
             if bytes_:
-                yc = yc.encode("utf-8")
+                yc = yc.encode("utf-8")  # type: ignore
             p.write(yc)
         elif how == FileType.JSON:
             jc = json.dumps(item, indent=2) + "\n"
             if bytes_:
-                jc = jc.encode("utf-8")
+                jc = jc.encode("utf-8")  # type: ignore
             p.write(jc)
         elif how == FileType.JSONLD:
             for subitem in item:
                 jc = json.dumps(subitem) + "\n"
                 if bytes_:
-                    jc = jc.encode("utf-8")
+                    jc = jc.encode("utf-8")  # type: ignore
                 p.write(jc)
         elif how == FileType.CSV and (
             isinstance(item, pd.DataFrame) or isinstance(item, pd.Series)
         ):
             r = item.to_csv()
             if bytes_:
-                r = r.encode("utf-8")
+                r = r.encode("utf-8")  # type: ignore
             p.write(r)
         elif how == FileType.TXT:
             p.write(str(item))
 
     @classmethod
     def _open_pointer(cls, p: io.BytesIO | gzip.GzipFile, how: FileType, **kwargs):
+        """Read data from file pointer in specified format.
+
+        Args:
+            p: File pointer
+            how: FileType indicating format to read
+            **kwargs: Additional arguments passed to readers
+
+        Returns:
+            Data read from file in appropriate format
+
+        Raises:
+            ValueError: If trying to read gzipped env files
+        """
         if how == FileType.PICKLE:
             r = pickle.load(p)
         elif how == FileType.YAML:
