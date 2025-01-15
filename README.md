@@ -1,6 +1,6 @@
 # SUThing
 
-SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection useful classes and decorators.  
+SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of useful classes and decorators.  
 
 A Python utility package providing tools for file handling, timing, profiling, and data comparison.
 
