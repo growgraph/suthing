@@ -1,4 +1,4 @@
-## SUThing
+# SUThing
 
 SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection useful classes and decorators.  
 
@@ -76,10 +76,6 @@ result = equals(complex_dict1, complex_dict2)
 - pandas
 - PyYAML
 - python-dotenv
-
-## License
-
-MIT
 
 ## Contributing
 
