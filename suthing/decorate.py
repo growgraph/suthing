@@ -172,7 +172,7 @@ def profile(_foo=None, _argnames=None):
             _profiler = kwargs.get("_profiler", None)
             if _argnames is not None and not isinstance(_argnames, str):
                 raise TypeError(
-                    "_arg_name type should be str, got" f" {type(_argnames)} instead"
+                    f"_arg_name type should be str, got {type(_argnames)} instead"
                 )
             if _profiler is not None:
                 with Timer() as timer:

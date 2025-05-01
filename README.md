@@ -4,9 +4,13 @@ SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of 
 
 A Python utility package providing tools for file handling, timing, profiling, and data comparison.
 
+![Python](https://img.shields.io/badge/python-3.10-blue.svg) 
+[![pre-commit](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Features
 
-- **File Handling**: Flexible interface for reading/writing multiple file formats (YAML, JSON, CSV, pickle, etc.)
+- **File Handling**: one-line file reading/wriing with file format infererence from provided extension (YAML, JSON, CSV, pickle, gz etc.)
 - **Performance Measurement**: Simple timer utilities and profiling decorators
 - **Data Comparison**: Deep comparison of nested data structures
 - **Error Handling**: Decorators for secure function execution and error tracking
@@ -22,19 +26,20 @@ pip install suthing
 ### File Handling
 
 ```python
-from suthing.file_handle import FileHandle, FileType
+from suthing import FileHandle, FileType
 
 # Read YAML file
 data = FileHandle.load(fpath="config.yaml")
 
 # Write compressed JSON
-FileHandle.dump(data, "output.json.gz", how=FileType.JSON)
+# file type inferred from extension
+FileHandle.dump(data, "output.json.gz")
 ```
 
 ### Timing Code
 
 ```python
-from suthing.timer import Timer
+from suthing import Timer
 
 with Timer() as t:
     # Your code here
@@ -45,7 +50,7 @@ print(f"Execution took {t.elapsed_str}")
 ### Profiling Functions
 
 ```python
-from suthing.decorate import profile, SProfiler
+from suthing import profile, SProfiler
 
 profiler = SProfiler()
 
@@ -64,7 +69,7 @@ stats = profiler.view_stats()
 ### Deep Comparison
 
 ```python
-from suthing.compare import equals
+from suthing import equals
 
 # Compare nested structures
 result = equals(complex_dict1, complex_dict2)

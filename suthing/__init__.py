@@ -1,7 +1,7 @@
 from importlib.metadata import version
 
-from suthing.config.factory import ConfigFactory
-from suthing.config.onto import (
+from suthing.connection.factory import ConfigFactory
+from suthing.connection.onto import (
     ArangoConnectionConfig,
     ConnectionKind,
     DBConnectionConfig,
@@ -16,3 +16,20 @@ from .file_handle import FileHandle
 from .timer import Timer
 
 __version__ = version(__name__)
+
+
+__all__ = [
+    "ArangoConnectionConfig",
+    "ConnectionKind",
+    "DBConnectionConfig",
+    "Neo4jConnectionConfig",
+    "ProtoConnectionConfig",
+    "WSGIConfig",
+    "Timer",
+    "equals",
+    "Report",
+    "Return",
+    "SProfiler",
+    "profile",
+    "secureit",
+]

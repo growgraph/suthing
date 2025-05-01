@@ -172,7 +172,7 @@ class FileHandle:
         compression = kwargs.pop("compression", None)
         fpath: str | pathlib.Path | None = kwargs.pop("fpath", None)
 
-        # assume loading as a package
+        # assume loading from a package
         if pname is not None:
             lemmas = suffixes(pname)
             if lemmas[-1] == ".gz":
