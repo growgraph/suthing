@@ -1,0 +1,45 @@
+name: Build GitHub Pages
+on:
+    push:
+        branches:
+        -   main
+        paths:
+        -   'docs/**'
+        -   'mkdocs.yml'
+        -   'suthing/**'
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pages: write
+    id-token: write
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout code
+            uses: actions/checkout@v4
+            with:
+                fetch-depth: 0
+
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.10'
+        -   name: Install uv
+            uses: astral-sh/setup-uv@v5
+            with:
+                version: "0.6.17"
+        -   name: Install dependencies
+            run: |
+                uv sync --group docs
+
+        -   name: Configure Git
+            run: |
+                git config --global user.name "github-actions"
+                git config --global user.email "github-actions@github.com"
+
+        -   name: Deploy documentation
+            run: |-
+                uv run mkdocs gh-deploy --force

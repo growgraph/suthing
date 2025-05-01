@@ -2,31 +2,23 @@ fail_fast: false
 
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.3
+    rev: v0.11.7
     hooks:
     -   id: ruff
         args: [--fix, --ignore, E722, --exclude, "__init__.py"]
     -   id: ruff-format
--   repo: local
-    hooks:
-    -   id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["-rn", "-sn", "--output-format=colorized", "--errors-only", "--jobs", "4", "--rcfile=.pylintrc"]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
     -   id: isort
         args:
         -   --line-length=79
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+    rev: v1.15.0
     hooks:
     -   id: mypy
         args: [--show-error-codes]
-        additional_dependencies: [types-requests, types-python-dateutil, types-waitress, types-PyYAML, pandas-stubs]
+        additional_dependencies: [types-requests, types-python-dateutil, types-waitress, types-PyYAML, pandas-stubs, types-setuptools]
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
     rev: v2.14.0
     hooks:
@@ -46,7 +38,7 @@ repos:
     -   id: pretty-format-toml
         args: [--autofix]
 -   repo: https://github.com/pappasam/toml-sort
-    rev: v0.23.1
+    rev: v0.24.2
     hooks:
     -   id: toml-sort
         args: [-ia]
