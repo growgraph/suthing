@@ -6,7 +6,7 @@ on:
         paths:
         -   'docs/**'
         -   'mkdocs.yml'
-        -   'your-package/**' # Replace with your actual package name
+        -   'suthing/**'
     workflow_dispatch:
 
 permissions:
