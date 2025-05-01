@@ -87,3 +87,4 @@ serialize/
 dmypy.json
 
 site/
+public/

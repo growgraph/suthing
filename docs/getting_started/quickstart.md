@@ -84,6 +84,6 @@ config = ConfigFactory.create_config(dict_like={
 
 ## Next Steps
 
-- Explore the [Features](features/) section for detailed documentation
-- Check out more [Examples](examples.md)
-- Read the complete [API Reference](reference/) 
+<!-- - Explore the [Features](features/) section for detailed documentation -->
+- Check out more [Examples](../examples.md)
+- Read the complete [API Reference](../reference/index.md) 

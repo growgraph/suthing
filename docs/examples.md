@@ -126,6 +126,6 @@ result = process_sensitive_data(data)
 
 For more detailed examples and use cases, check out:
 
-- [Features](features/) - Detailed documentation of all features
-- [API Reference](reference/) - Complete API documentation
+<!-- - [Features](features/) - Detailed documentation of all features -->
+- [API Reference](reference/index.md) - Complete API documentation
 - [Quick Start](getting_started/quickstart.md) - Basic usage examples

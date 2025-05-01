@@ -32,15 +32,16 @@ plugins:
         handlers:
             python:
                 options:
-                    show_source: true
-                    show_root_toc_entry: false
-                    docstring_style: google
-                    show_submodules: true
-                    show_category_heading: true
-                    show_if_no_docstring: true
-                    setup_commands:
-                    -   "import sys"
-                    -   "sys.path.append('.')"
+                    extra:
+                        show_source: true
+                        show_root_toc_entry: false
+                        docstring_style: google
+                        show_submodules: true
+                        show_category_heading: true
+                        show_if_no_docstring: true
+                        setup_commands:
+                        -   "import sys"
+                        -   "sys.path.append('.')"
           # selection:
           #   docstring_style: google
           #   inherited_members: true
@@ -57,6 +58,7 @@ nav:
   #   - Data Comparison: features/comparison.md
   #   - Error Handling: features/error_handling.md
 -   API Reference:
+    -   Overview: reference/index.md
     -   Core: reference/core.md
     -   Connection: reference/connection.md
 -   Examples: examples.md

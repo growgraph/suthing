@@ -8,7 +8,7 @@ We welcome contributions to Suthing! This document provides guidelines and instr
 2. Clone your fork locally
 3. Install the development dependencies:
    ```bash
-   pip install -e ".[dev]"
+   uv sync --dev
    ```
 4. Install pre-commit hooks:
    ```bash
@@ -24,7 +24,7 @@ We welcome contributions to Suthing! This document provides guidelines and instr
 
 2. Make your changes and ensure tests pass:
    ```bash
-   pytest
+   pytest test
    ```
 
 3. Commit your changes with a descriptive message:

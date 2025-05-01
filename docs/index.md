@@ -41,8 +41,8 @@ result = equals(dict1, dict2)
 Explore the documentation to learn more about Suthing's features:
 
 - [Getting Started](getting_started/quickstart.md) - Learn how to install and use Suthing
-- [Features](features/) - Detailed documentation of all features
-- [API Reference](reference/) - Complete API documentation
+<!-- - [Features](features/) - Detailed documentation of all features -->
+- [API Reference](reference/index.md) - Complete API documentation
 - [Examples](examples.md) - Code examples and usage patterns
 
 ## Requirements
