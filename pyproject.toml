@@ -9,7 +9,7 @@ dev = [
   "setuptools>=80.1.0"
 ]
 docs = [
-  "mkdocs-material>=9.6.12",
+  "mkdocs-material",
   "mkdocs>=1.6.1",
   "mkdocstrings[python]>=0.29.1"
 ]

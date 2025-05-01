@@ -8,12 +8,11 @@ Load and manage configuration files with automatic format detection:
 
 ```python
 from suthing import FileHandle
-from pathlib import Path
 
 # Load configuration from different formats
 config = FileHandle.load("config.yaml")
 env_vars = FileHandle.load(".env")
-credentials = FileHandle.load("secrets.json")
+df = FileHandle.load("secrets.csv")
 
 # Save configuration with compression
 FileHandle.dump(config, "config.json.gz")
@@ -55,17 +54,17 @@ Create and manage database connections with automatic type detection:
 from suthing.connection import ConfigFactory
 
 # ArangoDB connection
-arango_config = ConfigFactory.create_config(url="http://localhost:8529")
+arango_config = ConfigFactory.create_config("http://localhost:8529")
 
 # Neo4j connection
-neo4j_config = ConfigFactory.create_config(dict_like={
+neo4j_config = ConfigFactory.create_config({
     "port": "7474",
     "username": "neo4j",
     "password": "password"
 })
 
 # WSGI application
-wsgi_config = ConfigFactory.create_config(dict_like={
+wsgi_config = ConfigFactory.create_config({
     "port": "8000",
     "host": "0.0.0.0",
     "path": "/api"

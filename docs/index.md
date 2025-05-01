@@ -13,7 +13,8 @@ A Python utility package providing tools for file handling, timing, profiling, a
 
 ## Features
 
-- **File Handling**: one-line file reading/writing with file format inference from provided extension (YAML, JSON, CSV, pickle, gz etc.)
+- **File Handling**: One-line file reading/writing with file format inference from provided extension (YAML, JSON, CSV, pickle, gz etc.)
+- **API/Database Config Class**: Normalized representation of API connection configs
 - **Performance Measurement**: Simple timer utilities and profiling decorators
 - **Data Comparison**: Deep comparison of nested data structures
 - **Error Handling**: Decorators for secure function execution and error tracking
@@ -21,7 +22,7 @@ A Python utility package providing tools for file handling, timing, profiling, a
 ## Quick Start
 
 ```python
-from suthing import FileHandle, Timer, profile, equals
+from suthing import FileHandle, Timer, equals
 
 # Read a file
 data = FileHandle.load("config.yaml")
@@ -41,7 +42,6 @@ result = equals(dict1, dict2)
 Explore the documentation to learn more about Suthing's features:
 
 - [Getting Started](getting_started/quickstart.md) - Learn how to install and use Suthing
-<!-- - [Features](features/) - Detailed documentation of all features -->
 - [API Reference](reference/index.md) - Complete API documentation
 - [Examples](examples.md) - Code examples and usage patterns
 
