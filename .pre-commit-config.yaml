@@ -7,14 +7,6 @@ repos:
     -   id: ruff
         args: [--fix, --ignore, E722, --exclude, "__init__.py"]
     -   id: ruff-format
--   repo: local
-    hooks:
-    -   id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["-rn", "-sn", "--output-format=colorized", "--errors-only", "--jobs", "4", "--rcfile=.pylintrc"]
 -   repo: https://github.com/PyCQA/isort
     rev: 6.0.1
     hooks:
@@ -26,7 +18,7 @@ repos:
     hooks:
     -   id: mypy
         args: [--show-error-codes]
-        additional_dependencies: [types-requests, types-python-dateutil, types-waitress, types-PyYAML, pandas-stubs]
+        additional_dependencies: [types-requests, types-python-dateutil, types-waitress, types-PyYAML, pandas-stubs, types-setuptools]
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
     rev: v2.14.0
     hooks:
