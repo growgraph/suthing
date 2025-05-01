@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://growgraph.github.io/suthing/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/contributing/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/examples/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/getting_started/installation/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/getting_started/quickstart/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/reference/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/reference/connection/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+    <url>
+         <loc>https://growgraph.github.io/suthing/reference/core/</loc>
+         <lastmod>2025-05-01</lastmod>
+    </url>
+</urlset>
