@@ -99,7 +99,6 @@ class ProtoConnectionConfig(ConnectionConfig):
         if parsed.scheme:
             self.protocol = parsed.scheme
 
-
         # Extract port
         if parsed.port:
             self.port = str(parsed.port)

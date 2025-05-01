@@ -1,9 +1,10 @@
+import os
+import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
-from pathlib import Path
-import re
-import os
+
 from ..file_handle import FileHandle
 from .onto import ConnectionConfig, ConnectionKind
 
@@ -11,27 +12,29 @@ from .onto import ConnectionConfig, ConnectionKind
 def is_filepath(input_string) -> bool:
     """
     Determine if a string is a URL or a Linux filepath with extension.
-    
+
     Args:
         input_string (str): The string to check
-        
+
     Returns:
         str: "url", "filepath", or "unknown"
     """
     # Check if it's a linux filepath with extension
-    if '.' in os.path.basename(input_string):
+    if "." in os.path.basename(input_string):
         file_ext = os.path.splitext(input_string)[1]
         if file_ext and len(file_ext) > 1:
             return True
-        
-    url_pattern = re.compile(r'^(?:http|https|ftp|sftp|file)://', re.IGNORECASE)
+
+    url_pattern = re.compile(r"^(?:http|https|ftp|sftp|file)://", re.IGNORECASE)
     if url_pattern.match(input_string):
         return False
-    
+
     # Check for URL with hostname but missing scheme (www.example.com)
-    if re.match(r'^www\.', input_string) or ('.' in input_string and '/' in input_string and not input_string.startswith('/')):
+    if re.match(r"^www\.", input_string) or (
+        "." in input_string and "/" in input_string and not input_string.startswith("/")
+    ):
         return False
-    
+
     return False
 
 
@@ -41,10 +44,10 @@ class ConfigFactory:
     @staticmethod
     def _guess_connection_kind_from_port(port: int) -> Optional[ConnectionKind]:
         """Guess the connection kind based on port number.
-        
+
         Args:
             port: Port number to check
-            
+
         Returns:
             Guessed ConnectionKind or None if no match
         """
@@ -57,10 +60,10 @@ class ConfigFactory:
     @staticmethod
     def _extract_port_from_config(config: Dict[str, Any]) -> Optional[int]:
         """Extract port number from configuration dictionary.
-        
+
         Args:
             config: Configuration dictionary
-            
+
         Returns:
             Port number if found, None otherwise
         """
@@ -76,9 +79,9 @@ class ConfigFactory:
             parsed_url = urlparse(config["url"])
             if parsed_url.port:
                 return parsed_url.port
-            elif parsed_url.scheme == 'http':
+            elif parsed_url.scheme == "http":
                 return 80
-            elif parsed_url.scheme == 'https':
+            elif parsed_url.scheme == "https":
                 return 443
 
         return None
@@ -118,21 +121,21 @@ class ConfigFactory:
                     path = arg
                 else:
                     url = arg
-                    
+
         if url:
             # Parse URL to get port
             parsed_url = urlparse(url)
             port = None
             if parsed_url.port:
                 port = parsed_url.port
-            elif parsed_url.scheme == 'http':
+            elif parsed_url.scheme == "http":
                 port = 80
-            elif parsed_url.scheme == 'https':
+            elif parsed_url.scheme == "https":
                 port = 443
-                
+
             # Start with an empty config and add the URL
             config = {"url": url}
-            
+
             # Try to guess connection kind from port
             if port:
                 guessed_kind = cls._guess_connection_kind_from_port(port)

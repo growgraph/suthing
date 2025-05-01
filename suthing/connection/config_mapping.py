@@ -1,9 +1,9 @@
 from typing import Dict, Type
 
 from .onto import (
-    ConnectionKind,
-    ConnectionConfig,
     ArangoConnectionConfig,
+    ConnectionConfig,
+    ConnectionKind,
     Neo4jConnectionConfig,
     WSGIConfig,
 )
