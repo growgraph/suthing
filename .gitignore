@@ -85,3 +85,5 @@ serialize/
 # mypy
 .dmypy.json
 dmypy.json
+
+site/
