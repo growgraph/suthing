@@ -4,7 +4,7 @@ on:
         branches:
         -   main
         paths:
-        -   'example-mkdocs/**'
+        -   'docs/**'
     workflow_dispatch:
 permissions:
     contents: write

@@ -4,7 +4,8 @@ SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of 
 
 A Python utility package providing tools for file handling, timing, profiling, and data comparison.
 
-![Python](https://img.shields.io/badge/python-3.10-blue.svg) 
+![Python](https://img.shields.io/badge/python-3.10-blue.svg)
+[![PyPI version](https://badge.fury.io/py/suthing.svg)](https://badge.fury.io/py/suthing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pre-commit](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml)
 [![pytest](https://github.com/growgraph/suthing/actions/workflows/pytest.yml/badge.svg)](https://github.com/growgraph/suthing/actions/workflows/pytest.yml)
