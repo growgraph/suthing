@@ -6,7 +6,7 @@ on:
         paths:
         -   'docs/**'
         -   'mkdocs.yml'
-        -   'suthing/**'
+        -   'suthing/**' # Check this path
     workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
     id-token: write
 
 jobs:
-    deploy:
+    build:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout code
@@ -35,11 +35,22 @@ jobs:
             run: |
                 uv sync --group docs
 
-        -   name: Configure Git
+        -   name: Build site
             run: |
-                git config --global user.name "github-actions"
-                git config --global user.email "github-actions@github.com"
+                uv run mkdocs build --site-dir _site
 
-        -   name: Deploy documentation
-            run: |-
-                uv run mkdocs gh-deploy --force
+        -   name: Upload Pages artifact
+            uses: actions/upload-pages-artifact@v2
+            with:
+                path: _site
+
+    deploy:
+        needs: build
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v2
