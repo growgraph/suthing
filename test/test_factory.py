@@ -13,6 +13,7 @@ def test_factory():
     }
     ac = ConfigFactory.create_config(arango_args)
     assert int(ac.port) == 8529
+    assert ac.url[-4:] == str(ac.port)
 
 
 def test_wsgi():
