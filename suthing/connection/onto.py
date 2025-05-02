@@ -83,9 +83,9 @@ class ProtoConnectionConfig(ConnectionConfig):
             self.url = self.hosts
         if self.url:
             self._parse_url()
-        elif self.hostname:
+        elif self.hostname is not None:
             self.url = f"{self.protocol}://{self.hostname}"
-        elif self.port:
+        if self.port is not None:
             self.url = f"{self.url}:{self.port}"
 
     def _parse_url(self):
