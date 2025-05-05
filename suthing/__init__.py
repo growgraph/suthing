@@ -32,4 +32,5 @@ __all__ = [
     "SProfiler",
     "profile",
     "secureit",
+    "FileHandle",
 ]
