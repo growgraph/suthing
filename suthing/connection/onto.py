@@ -1,5 +1,5 @@
 import dataclasses
-from enum import Enum, EnumMeta
+from enum import EnumMeta, StrEnum
 from typing import Any, Dict, Optional, Type
 from urllib.parse import urlparse
 
@@ -17,13 +17,13 @@ class EnumMetaWithContains(EnumMeta):
         return True
 
 
-class ConnectionKind(str, Enum, metaclass=EnumMetaWithContains):
+class ConnectionKind(StrEnum, metaclass=EnumMetaWithContains):
     """Enum representing different types of connections."""
 
     ARANGO = "arango"
     NEO4J = "neo4j"
     WSGI = "wsgi"
-    # Can add more connection types here
+    TIGERGRAPH = "tigergraph"
 
     @property
     def config_class(self) -> Type["ConnectionConfig"]:

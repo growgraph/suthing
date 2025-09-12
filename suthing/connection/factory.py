@@ -136,12 +136,6 @@ class ConfigFactory:
             # Start with an empty config and add the URL
             config = {"url": url}
 
-            # Try to guess connection kind from port
-            if port:
-                guessed_kind = cls._guess_connection_kind_from_port(port)
-                if guessed_kind:
-                    config["connection_type"] = guessed_kind.value
-
         # Handle file-based configuration
         elif path is not None:
             config = FileHandle.load(path)
