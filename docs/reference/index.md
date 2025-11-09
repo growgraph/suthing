@@ -9,12 +9,6 @@ Welcome to the Suthing API Reference documentation. This section contains detail
 - [Profiler](core.md#profiler) - Function profiling utilities
 - [Comparison](core.md#comparison) - Deep data structure comparison
 
-## Connection Modules
-
-- [Connection Types](connection.md#connection-types) - Supported connection types
-- [Configuration](connection.md#connection-configuration) - Connection configuration classes
-- [Factories](connection.md#connection-factories) - Connection factory utilities
-
 ## Quick Links
 
 - [Getting Started](../getting_started/quickstart.md) - Basic usage examples

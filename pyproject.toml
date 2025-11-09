@@ -6,7 +6,8 @@ requires = ["hatchling"]
 dev = [
   "pre-commit>=3.3.3,<4",
   "pytest>=8.3.3,<9",
-  "setuptools>=80.1.0"
+  "setuptools>=80.1.0",
+  "ty>=0.0.1a25"
 ]
 docs = [
   "mkdocs-material",
@@ -23,9 +24,11 @@ classifiers = [
 ]
 dependencies = [
   "dataclass-wizard>=0.34.0,<0.35",
+  "mkdocs-gen-files>=0.5.0",
   "pandas>=2.0.3,<3",
   "python-dotenv>=1.0.0,<2",
-  "pyyaml>=3.10"
+  "pyyaml>=3.10",
+  "strenum>=0.4.15"
 ]
 description = "Small Useful Things : python package for convenient primitives"
 keywords = [
@@ -35,8 +38,8 @@ keywords = [
 license = "MIT"
 name = "suthing"
 readme = "README.md"
-requires-python = ">=3.11, <4"
-version = "0.4.1"
+requires-python = ">=3.10, <4"
+version = "0.5.0"
 
 [project.urls]
 Homepage = "https://github.com/growgraph/suthing"

@@ -15,7 +15,6 @@ A Python utility package providing tools for file handling, timing, profiling, a
 ## Features
 
 - **File Handling**: One-line file reading/writing with file format inference from provided extension (YAML, JSON, CSV, pickle, gz etc.)
-- **API/Database Config Class**: Normalized representation of API connection configs
 - **Performance Measurement**: Simple timer utilities and profiling decorators
 - **Data Comparison**: Deep comparison of nested data structures
 - **Error Handling**: Decorators for secure function execution and error tracking
