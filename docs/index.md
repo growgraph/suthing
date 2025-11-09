@@ -4,17 +4,17 @@ SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of 
 
 A Python utility package providing tools for file handling, timing, profiling, and data comparison.
 
-![Python](https://img.shields.io/badge/python-3.10-blue.svg) 
+![Python](https://img.shields.io/badge/python-3.10-blue.svg)
+[![PyPI version](https://badge.fury.io/py/suthing.svg)](https://badge.fury.io/py/suthing)
+[![PyPI Downloads](https://static.pepy.tech/badge/suthing)](https://pepy.tech/projects/suthing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pre-commit](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/growgraph/suthing/actions/workflows/pre-commit.yml)
 [![pytest](https://github.com/growgraph/suthing/actions/workflows/pytest.yml/badge.svg)](https://github.com/growgraph/suthing/actions/workflows/pytest.yml)
-[![PyPI version](https://badge.fury.io/py/suthing.svg)](https://badge.fury.io/py/suthing)
 <!-- [![Documentation Status](https://readthedocs.org/projects/suthing/badge/?version=latest)](https://suthing.readthedocs.io/en/latest/?badge=latest) -->
 
 ## Features
 
 - **File Handling**: One-line file reading/writing with file format inference from provided extension (YAML, JSON, CSV, pickle, gz etc.)
-- **API/Database Config Class**: Normalized representation of API connection configs
 - **Performance Measurement**: Simple timer utilities and profiling decorators
 - **Data Comparison**: Deep comparison of nested data structures
 - **Error Handling**: Decorators for secure function execution and error tracking

@@ -63,24 +63,6 @@ dict2 = {"a": {"b": 1, "c": [1, 2, 3]}}
 result = equals(dict1, dict2)  # True
 ```
 
-## Connection Management
-
-Create and manage database connections:
-
-```python
-from suthing.connection import ConfigFactory
-
-# Create a connection from URL
-config = ConfigFactory.create_config(url="http://localhost:8529")
-# This will automatically detect it's an ArangoDB connection based on port
-
-# Or from a dictionary
-config = ConfigFactory.create_config(dict_like={
-    "port": "8529",
-    "username": "user",
-    "password": "pass"
-})
-```
 
 ## Next Steps
 

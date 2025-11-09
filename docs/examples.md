@@ -46,31 +46,6 @@ process_data(size=1000, batch_size=50, _profiler=profiler)
 stats = profiler.view_stats()
 ```
 
-## Database Connection Management
-
-Create and manage database connections with automatic type detection:
-
-```python
-from suthing.connection import ConfigFactory
-
-# ArangoDB connection
-arango_config = ConfigFactory.create_config("http://localhost:8529")
-
-# Neo4j connection
-neo4j_config = ConfigFactory.create_config({
-    "port": "7474",
-    "username": "neo4j",
-    "password": "password"
-})
-
-# WSGI application
-wsgi_config = ConfigFactory.create_config({
-    "port": "8000",
-    "host": "0.0.0.0",
-    "path": "/api"
-})
-```
-
 ## Data Validation
 
 Compare and validate complex data structures:
