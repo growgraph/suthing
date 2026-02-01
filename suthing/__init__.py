@@ -15,6 +15,7 @@ __all__ = [
     "Return",
     "SProfiler",
     "profile",
+    "timeit",
     "secureit",
     "FileHandle",
 ]
