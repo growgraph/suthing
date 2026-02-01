@@ -16,16 +16,17 @@ docs = [
 ]
 
 [project]
-authors = [{email = "abelikov@gmail.com", name = "Alexander Belikov"}]
+authors = [{email = "alexander@growgraph.dev", name = "Alexander Belikov"}]
 classifiers = [
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python"
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-  "dataclass-wizard>=0.34.0,<0.35",
+  "dataclass-wizard>=0.33.1",
   "mkdocs-gen-files>=0.5.0",
-  "pandas>=2.0.3,<3",
+  "pandas>=2.3.3",
   "python-dotenv>=1.0.0,<2",
   "pyyaml>=3.10",
   "strenum>=0.4.15"
@@ -38,11 +39,17 @@ keywords = [
 license = "MIT"
 name = "suthing"
 readme = "README.md"
-requires-python = ">=3.10, <4"
-version = "0.5.0"
+requires-python = ">=3.11"
+version = "0.5.1"
 
 [project.urls]
 Homepage = "https://github.com/growgraph/suthing"
+
+[tool.hatch.build.targets.sdist]
+include = ["suthing"]
+
+[tool.hatch.build.targets.wheel]
+include = ["suthing"]
 
 [tool.mypy]
 ignore_missing_imports = true
