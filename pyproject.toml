@@ -40,7 +40,7 @@ license = "MIT"
 name = "suthing"
 readme = "README.md"
 requires-python = ">=3.11"
-version = "0.5.0"
+version = "0.5.1"
 
 [project.urls]
 Homepage = "https://github.com/growgraph/suthing"
