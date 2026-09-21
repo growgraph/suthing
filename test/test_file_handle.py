@@ -94,8 +94,18 @@ def test_type_mismatch_raises_and_writes_nothing(tmp_path, item, name):
 
 def test_unexpected_kwargs_rejected(tmp_path):
     path = FileHandle.dump({"a": 1}, tmp_path / "x.yaml")
-    with pytest.raises(TypeError, match="fpath"):
+    with pytest.raises(TypeError, match="sep"):
+        FileHandle.load(path, sep=",")
+
+
+def test_deprecated_fpath_still_loads(tmp_path):
+    path = FileHandle.dump({"a": 1}, tmp_path / "x.yaml")
+    with pytest.warns(DeprecationWarning, match="fpath"):
+        assert FileHandle.load(fpath=path) == {"a": 1}
+    with pytest.raises(TypeError, match="once"), pytest.warns(DeprecationWarning):
         FileHandle.load(path, fpath=path)
+    with pytest.raises(TypeError, match="missing"):
+        FileHandle.load()
 
 
 def test_jsonld_is_json_ld(tmp_path):

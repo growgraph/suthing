@@ -27,7 +27,8 @@ classifiers = [
 dependencies = [
   "pandas>=2.3.3",
   "python-dotenv>=1.0.0,<2",
-  "pyyaml>=6.0"
+  "pyyaml>=6.0",
+  "strenum>=0.4.15"
 ]
 description = "Small Useful Things : python package for convenient primitives"
 keywords = [
@@ -38,7 +39,7 @@ license = "MIT"
 name = "suthing"
 readme = "README.md"
 requires-python = ">=3.11"
-version = "0.6.0"
+version = "0.6.1"
 
 [[project.authors]]
 email = "alexander@growgraph.dev"

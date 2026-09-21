@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from collections.abc import Callable
 from contextlib import ContextDecorator
 from datetime import UTC, datetime
@@ -102,6 +103,26 @@ class Timer(ContextDecorator):
     def elapsed_ms(self) -> int:
         """:attr:`elapsed` in whole milliseconds."""
         return int(self.elapsed * 1000)
+
+    @property
+    def mins(self) -> int:
+        """Whole minutes of :attr:`elapsed`. Deprecated: use :attr:`elapsed`."""
+        warnings.warn(
+            "Timer.mins is deprecated; use Timer.elapsed or Timer.format()",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return int(self.elapsed // SECONDS_PER_MINUTE)
+
+    @property
+    def secs(self) -> int:
+        """Whole seconds past :attr:`mins`. Deprecated: use :attr:`elapsed`."""
+        warnings.warn(
+            "Timer.secs is deprecated; use Timer.elapsed or Timer.format()",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return int(self.elapsed % SECONDS_PER_MINUTE)
 
     @property
     def running(self) -> bool:
