@@ -11,6 +11,7 @@ import io
 import json
 import pathlib
 import pickle
+import warnings
 from collections.abc import Iterator, Mapping
 from enum import Enum
 from importlib import resources
@@ -205,13 +206,20 @@ class FileHandle:
 
     @classmethod
     def load(
-        cls, path: PathLike, *, how: FileType | str | None = None, **kwargs: Any
+        cls,
+        path: PathLike | None = None,
+        *,
+        how: FileType | str | None = None,
+        fpath: PathLike | None = None,
+        **kwargs: Any,
     ) -> Any:
         """Read a file from disk.
 
         Args:
             path: File to read; ``~`` is expanded.
             how: Format override; by default inferred from the extension.
+            fpath: Deprecated spelling of *path*, kept so code written for
+                suthing 0.5 keeps working; emits ``DeprecationWarning``.
             **kwargs: Passed to ``pandas.read_csv`` for CSV/TSV. Any other
                 format rejects extra arguments.
 
@@ -220,8 +228,20 @@ class FileHandle:
 
         Raises:
             ValueError: If the format cannot be inferred.
-            TypeError: For keyword arguments the format does not take.
+            TypeError: For keyword arguments the format does not take, or
+                when neither or both of *path* and *fpath* are given.
         """
+        if fpath is not None:
+            warnings.warn(
+                "FileHandle.load(fpath=...) is deprecated; pass the path positionally",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if path is not None:
+                raise TypeError("pass the path once: positionally or as fpath=")
+            path = fpath
+        if path is None:
+            raise TypeError("FileHandle.load() missing the file path")
         fmt, _ = _resolve(path, how)
         with open_compressed(path, "rb") as stream:
             return _read(stream, fmt, **kwargs)

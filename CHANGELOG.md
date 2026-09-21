@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.1]
+
+Compatibility release for code written against 0.5.x. Packages that pinned `suthing>=0.5` without an upper bound broke on a fresh install of 0.6.0; with 0.6.1 they work unchanged. The shims below will be removed in 0.7, so pin `suthing>=0.6.1,<0.7` and move off them.
+
+### Changed
+
+- `strenum` is a dependency again. suthing does not use it, but code that imported `strenum` while only receiving it through suthing 0.5 failed with `ModuleNotFoundError` on 0.6.0.
+
+### Deprecated
+
+- `FileHandle.load(fpath=...)` is accepted again and emits `DeprecationWarning`; pass the path positionally.
+- `Timer.mins` and `Timer.secs` are back and emit `DeprecationWarning`; use `Timer.elapsed` or `Timer.format()`.
+
+## [0.6.0] - 2026-09-22
 
 ### Added
 
@@ -35,8 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Breaking:** `Timer.mins` and `Timer.secs` (restored as deprecated in 0.6.1).
 - **Breaking:** `secureit`, `timeit`, `Report`, `Return`, `SProfiler`, `profile` and the `suthing.decorate` module. Use `Profiler` / `profiled` for profiling and `Timer` for timing.
-- Unused runtime dependencies `dataclass-wizard` and `strenum`. `mkdocs-gen-files` moves to the `docs` dependency group.
+- Unused runtime dependencies `dataclass-wizard` and `strenum` (`strenum` restored in 0.6.1). `mkdocs-gen-files` moves to the `docs` dependency group.
 
 ## [0.5.1] - 2026-02-01
 

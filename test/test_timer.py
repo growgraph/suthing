@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 from suthing import Timer, format_duration, utc_now_iso
 
 
@@ -45,3 +47,12 @@ def test_utc_now_iso():
     stamp = utc_now_iso()
     assert stamp.endswith("+00:00") and "." not in stamp
     assert "." in utc_now_iso("milliseconds")
+
+
+def test_deprecated_mins_secs(monkeypatch):
+    clock = iter([10.0, 137.9])
+    monkeypatch.setattr("suthing.timer.perf_counter", lambda: next(clock))
+    with Timer() as t:
+        pass
+    with pytest.warns(DeprecationWarning):
+        assert (t.mins, t.secs) == (2, 7)
