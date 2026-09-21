@@ -1,8 +1,8 @@
 # SUThing <img src="docs/assets/favicon.ico" alt="suthing logo" style="height: 32px; width:32px;"/>
 
-SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of useful classes and decorators.  
+SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of small, dependable utilities.  
 
-A Python utility package providing tools for file handling, timing, profiling, and data comparison.
+A Python utility package providing tools for file handling, timing, profiling, data comparison and hashing.
 
 ![Python](https://img.shields.io/badge/python-%3E=3.11-blue?logo=python)
 [![PyPI version](https://badge.fury.io/py/suthing.svg)](https://badge.fury.io/py/suthing)
@@ -12,10 +12,11 @@ A Python utility package providing tools for file handling, timing, profiling, a
 
 ## Features
 
-- **File Handling**: one-line file reading/wriing with file format infererence from provided extension (YAML, JSON, CSV, pickle, gz etc.)
-- **Performance Measurement**: Simple timer utilities and profiling decorators
-- **Data Comparison**: Deep comparison of nested data structures
-- **Error Handling**: Decorators for secure function execution and error tracking
+- **File Handling**: one-line reading and writing with the format inferred from the extension (YAML, JSON, JSON Lines, CSV/TSV, text, dotenv, pickle), transparent `.gz`/`.bz2`/`.xz`/`.zst` compression, atomic writes and streaming reads
+- **Timing and Profiling**: a `Timer` context manager/decorator and opt-in function profiling with per-key statistics
+- **Data Comparison**: deep `diff` of nested structures that reports the path of every difference, with numeric tolerance and order-insensitive matching
+- **Hashing**: stable hashes of JSON-like values, text, files and directory trees
+- **Small Helpers**: `batched`, `slugify`, `to_jsonable`, `env_flag`, `setup_logging`, `utc_now_iso`
 
 ## Documentation
 Full documentation is available at: [growgraph.github.io/suthing](https://growgraph.github.io/suthing)
@@ -33,12 +34,17 @@ pip install suthing
 ```python
 from suthing import FileHandle, FileType
 
-# Read YAML file
-data = FileHandle.load(fpath="config.yaml")
+# format inferred from the extension
+data = FileHandle.load("config.yaml")
 
-# Write compressed JSON
-# file type inferred from extension
+# compressed by suffix, written atomically
 FileHandle.dump(data, "output.json.gz")
+
+# data shipped inside a package
+defaults = FileHandle.load_resource("mypkg.data", "defaults.yaml")
+
+# explicit format for an unrecognised extension
+secret = FileHandle.load("token.secret", how=FileType.TXT)
 ```
 
 ### Timing Code
@@ -55,38 +61,45 @@ print(f"Execution took {t.elapsed_str}")
 ### Profiling Functions
 
 ```python
-from suthing import profile, SProfiler
+from suthing import Profiler, profiled
 
-profiler = SProfiler()
 
-@profile(_argnames="input_size")
-def my_function(input_size):
-    # Function code
-    pass
+@profiled(key_args="input_size")
+def my_function(input_size): ...
 
-# Run with profiler
-my_function(input_size=100, _profiler=profiler)
 
-# View results
-stats = profiler.view_stats()
+with Profiler() as prof:
+    my_function(100)
+
+stats = prof.summary()  # {"my_function(input_size=100)": ProfileStats(...)}
 ```
 
 ### Deep Comparison
 
 ```python
-from suthing import equals
+from suthing import diff, equals
 
-# Compare nested structures
-result = equals(complex_dict1, complex_dict2)
+equals(expected, actual)  # bool
+for d in diff(expected, actual):  # where they differ
+    print(d)  # $.users[1].name: values differ (expected='Bob', actual='Rob')
 ```
 
 ## Requirements
 
-- Python 3.10+
-- pandas
+- Python 3.11+
+- pandas (imported only for CSV/TSV)
 - PyYAML
 - python-dotenv
+- optional: `zstandard` for `.zst` files (`pip install "suthing[zstd]"`)
+
+## Development
+
+```bash
+uv sync --group dev
+uv run pytest test
+uv run ty check suthing test
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. See [Contributing](docs/contributing.md) for the full workflow.

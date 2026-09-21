@@ -8,11 +8,11 @@ We welcome contributions to Suthing! This document provides guidelines and instr
 2. Clone your fork locally
 3. Install the development dependencies:
    ```bash
-   uv sync --dev
+   uv sync --group dev
    ```
 4. Install pre-commit hooks:
    ```bash
-   pre-commit install
+   uv run pre-commit install
    ```
 
 ## Development Workflow
@@ -22,9 +22,10 @@ We welcome contributions to Suthing! This document provides guidelines and instr
    git checkout -b feature/your-feature-name
    ```
 
-2. Make your changes and ensure tests pass:
+2. Make your changes and ensure tests and type checks pass:
    ```bash
-   pytest test
+   uv run pytest test
+   uv run ty check suthing test
    ```
 
 3. Commit your changes with a descriptive message:
@@ -82,4 +83,4 @@ When reporting issues, please include:
 
 ## License
 
-By contributing to Suthing, you agree that your contributions will be licensed under the project's MIT License. 
+By contributing to Suthing, you agree that your contributions will be licensed under the project's MIT License.

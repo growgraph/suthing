@@ -1,10 +1,15 @@
-import os
+import pathlib
 
 import pytest
 
+DATA = pathlib.Path(__file__).parent / "data"
+
 
 @pytest.fixture()
-def parameters():
-    cpath = os.path.dirname(os.path.realpath(__file__))
-    ref_json = [{"a": "abc"}, {"b": "abc"}]
-    return [cpath, ref_json]
+def data_dir() -> pathlib.Path:
+    return DATA
+
+
+@pytest.fixture()
+def rows() -> list[dict[str, str]]:
+    return [{"a": "abc"}, {"b": "abc"}]

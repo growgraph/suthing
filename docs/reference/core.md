@@ -1,35 +1,87 @@
-# Core Module
+# Core Modules
 
-The core module provides essential utilities for file handling, timing, and data comparison.
+Everything below is importable from the top-level `suthing` package.
 
 ## File Handling
 
-::: suthing.file_handle.FileHandle
+::: suthing.file_handle
     options:
       show_root_toc_entry: false
-      show_source: true
-      heading_level: 2
+      heading_level: 3
 
-## Timer
+## JSON Lines
 
-::: suthing.timer.Timer
+::: suthing.jsonl
     options:
       show_root_toc_entry: false
-      show_source: true
-      heading_level: 2
+      heading_level: 3
 
-## Profiler
+## File System
 
-::: suthing.decorate.SProfiler
+::: suthing.fs
     options:
       show_root_toc_entry: false
-      show_source: true
-      heading_level: 2
+      heading_level: 3
+
+## Timing
+
+::: suthing.timer
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## Profiling
+
+::: suthing.profiling
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
 
 ## Comparison
 
-::: suthing.compare.equals
+::: suthing.compare
     options:
       show_root_toc_entry: false
-      show_source: true
-      heading_level: 2 
+      heading_level: 3
+
+## Hashing
+
+::: suthing.hashing
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## JSON Conversion
+
+::: suthing.jsonable
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## Iteration
+
+::: suthing.iterx
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## Text
+
+::: suthing.text
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## Environment
+
+::: suthing.environ
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
+
+## Logging
+
+::: suthing.log
+    options:
+      show_root_toc_entry: false
+      heading_level: 3
