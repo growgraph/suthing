@@ -1,253 +1,354 @@
-"""Utilities for handling different file types and formats.
+"""Read and write files whose format is inferred from the file name.
 
-This module provides a flexible interface for reading and writing various file formats
-including YAML, JSON, CSV, pickle and others. Supports both regular and gzipped files.
+Supported formats are listed in :class:`FileType`; the extension → format map
+is :data:`EXTENSIONS`. Any of them can be compressed with ``.gz``, ``.bz2``,
+``.xz`` or ``.zst`` (see :mod:`suthing.fs`).
 """
 
-import gzip
+from __future__ import annotations
+
 import io
 import json
-import logging
 import pathlib
 import pickle
-import pkgutil
+from collections.abc import Iterator, Mapping
 from enum import Enum
+from importlib import resources
+from typing import IO, Any
 
-import pandas as pd
 import yaml
-from dotenv import load_dotenv
+from yaml.representer import RepresenterError
 
-logger = logging.getLogger(__name__)
-
-
-def suffixes(fp: str | pathlib.Path):
-    """Extract file suffixes from a path.
-
-    Args:
-        fp: File path as string or Path object
-
-    Returns:
-        List of suffix strings
-    """
-    if isinstance(fp, str):
-        fp = pathlib.Path(fp)
-    suffixes = fp.suffixes
-    if not suffixes and "." in fp.stem:
-        return [fp.stem]
-    return fp.suffixes
+from suthing.fs import (
+    PathLike,
+    atomic_open,
+    open_compressed,
+    split_compression,
+    wrap_compressed,
+)
+from suthing.jsonable import to_jsonable
+from suthing.jsonl import iter_jsonl_stream, write_jsonl_stream
 
 
 class FileType(str, Enum):
-    """Supported file types for reading and writing."""
+    """Formats :class:`FileHandle` reads and writes."""
 
     YAML = "yaml"
     JSON = "json"
-    JSONLD = "jsonld"
+    JSONL = "jsonl"
     PICKLE = "pkl"
     CSV = "csv"
+    TSV = "tsv"
     TXT = "txt"
     ENV = "env"
 
 
+#: File extension → format. ``.jsonld`` is JSON-LD, i.e. a JSON document.
+EXTENSIONS: dict[str, FileType] = {
+    ".yaml": FileType.YAML,
+    ".yml": FileType.YAML,
+    ".json": FileType.JSON,
+    ".jsonld": FileType.JSON,
+    ".jsonl": FileType.JSONL,
+    ".ndjson": FileType.JSONL,
+    ".pkl": FileType.PICKLE,
+    ".pickle": FileType.PICKLE,
+    ".csv": FileType.CSV,
+    ".tsv": FileType.TSV,
+    ".txt": FileType.TXT,
+    ".md": FileType.TXT,
+    ".env": FileType.ENV,
+}
+
+
+def detect_format(path: PathLike) -> tuple[FileType | None, str | None]:
+    """Infer the format and compression of *path* from its name.
+
+    Args:
+        path: File path or name.
+
+    Returns:
+        ``(format, compression)``; ``format`` is ``None`` for an unknown
+        extension and ``compression`` is ``None`` for an uncompressed file.
+    """
+    fmt, compression = split_compression(path)
+    return EXTENSIONS.get(fmt), compression
+
+
+def _resolve(path: PathLike, how: FileType | str | None) -> tuple[FileType, str | None]:
+    detected, compression = detect_format(path)
+    if how is not None:
+        return FileType(how), compression
+    if detected is None:
+        raise ValueError(
+            f"cannot infer the format of {str(path)!r} from its extension;"
+            f" pass how=FileType.<X>. Known extensions: {', '.join(EXTENSIONS)}"
+        )
+    return detected, compression
+
+
+class _Dumper(yaml.SafeDumper):
+    """Safe YAML dumper that writes tuples as lists and coerces other types."""
+
+
+def _represent_other(dumper: yaml.SafeDumper, data: Any) -> yaml.Node:
+    converted = to_jsonable(data)
+    if type(converted) is type(data):
+        raise RepresenterError(
+            f"cannot represent an object of type {type(data).__name__}"
+        )
+    return dumper.represent_data(converted)
+
+
+_Dumper.add_representer(tuple, _Dumper.represent_list)
+_Dumper.add_multi_representer(object, _represent_other)
+
+
+def _no_kwargs(how: FileType, kwargs: Mapping[str, Any]) -> None:
+    if kwargs:
+        raise TypeError(
+            f"unexpected keyword arguments for {how.name}: {', '.join(kwargs)}"
+        )
+
+
+def _read(stream: IO[bytes], how: FileType, **kwargs: Any) -> Any:
+    if how in (FileType.CSV, FileType.TSV):
+        import pandas as pd
+
+        if how is FileType.TSV:
+            kwargs.setdefault("sep", "\t")
+        return pd.read_csv(stream, **kwargs)
+    _no_kwargs(how, kwargs)
+    if how is FileType.PICKLE:
+        return pickle.load(stream)
+    if how is FileType.YAML:
+        return yaml.safe_load(stream)
+    if how is FileType.JSON:
+        return json.load(stream)
+    if how is FileType.JSONL:
+        return list(iter_jsonl_stream(stream))
+    if how is FileType.TXT:
+        return stream.read().decode("utf-8")
+    if how is FileType.ENV:
+        from dotenv import dotenv_values
+
+        text = io.StringIO(stream.read().decode("utf-8"))
+        return {k: v for k, v in dotenv_values(stream=text).items() if v is not None}
+    raise AssertionError(f"unhandled format {how}")  # pragma: no cover
+
+
+def _env_value(value: Any) -> str:
+    text = str(value)
+    if text and all(c.isalnum() or c in "._-/:@+,=" for c in text):
+        return text
+    escaped = text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+    return f'"{escaped}"'
+
+
+def _encode(item: Any, how: FileType, **kwargs: Any) -> bytes:
+    if how in (FileType.CSV, FileType.TSV):
+        import pandas as pd
+
+        if not isinstance(item, (pd.DataFrame, pd.Series)):
+            raise TypeError(
+                f"{how.name} output needs a pandas DataFrame or Series,"
+                f" got {type(item).__name__}"
+            )
+        if how is FileType.TSV:
+            kwargs.setdefault("sep", "\t")
+        return item.to_csv(**kwargs).encode("utf-8")
+    _no_kwargs(how, kwargs)
+    if how is FileType.PICKLE:
+        return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
+    if how is FileType.YAML:
+        text = yaml.dump(item, Dumper=_Dumper, sort_keys=False, allow_unicode=True)
+        return text.encode("utf-8")
+    if how is FileType.JSON:
+        text = json.dumps(item, indent=2, ensure_ascii=False, default=to_jsonable)
+        return (text + "\n").encode("utf-8")
+    if how is FileType.TXT:
+        if not isinstance(item, str):
+            raise TypeError(f"TXT output needs a str, got {type(item).__name__}")
+        return item.encode("utf-8")
+    if how is FileType.ENV:
+        if not isinstance(item, Mapping):
+            raise TypeError(f"ENV output needs a mapping, got {type(item).__name__}")
+        lines = [f"{k}={_env_value(v)}\n" for k, v in item.items()]
+        return "".join(lines).encode("utf-8")
+    raise AssertionError(f"unhandled format {how}")  # pragma: no cover
+
+
 class FileHandle:
-    """Main class for handling file operations across different formats."""
+    """Format-aware file I/O: one call to read or write a whole file.
 
-    @classmethod
-    def _find_mode(cls, lemma: str):
-        """Determine file type from file extension.
+    The format comes from the extension (:data:`EXTENSIONS`) unless ``how`` is
+    given, and a compression suffix is handled transparently. An unknown
+    extension is an error rather than a guess.
 
-        Args:
-            lemma: File extension string
+    Formats read to / write from:
 
-        Returns:
-            FileType enum value corresponding to the extension
-        """
-        if lemma in [".yml", ".yaml"]:
-            return FileType.YAML
-        elif lemma == ".json":
-            return FileType.JSON
-        elif lemma == ".jsonld":
-            return FileType.JSONLD
-        elif lemma in [".pkl", ".pickle"]:
-            return FileType.PICKLE
-        elif lemma in [".csv"]:
-            return FileType.CSV
-        elif lemma in [".env"]:
-            return FileType.ENV
-        else:
-            return FileType.TXT
+    - YAML, JSON (``.jsonld`` too): any YAML/JSON value. YAML loads with
+      ``safe_load``; values json cannot serialise go through
+      :func:`suthing.to_jsonable`.
+    - JSONL: a list of values, one per line.
+    - CSV, TSV: a pandas ``DataFrame`` (extra keyword arguments go to
+      ``read_csv`` / ``to_csv``).
+    - TXT: a ``str``.
+    - ENV: a ``dict[str, str]``; loading does *not* touch ``os.environ``
+      (use :func:`suthing.load_env` for that).
+    - PICKLE: any picklable object. Only unpickle files you trust.
 
-    @classmethod
-    def _dump_pointer(cls, item, p, how: FileType, bytes_: bool = True) -> None:
-        """Write data to file pointer in specified format.
-
-        Args:
-            item: Data to write
-            p: File pointer
-            how: FileType indicating format to write in
-            bytes_: Whether to write in bytes mode
-        """
-        if how == FileType.PICKLE:
-            pickle.dump(item, p, pickle.HIGHEST_PROTOCOL)
-        elif how == FileType.YAML:
-            yc = yaml.dump(item)
-            if bytes_:
-                yc = yc.encode("utf-8")  # type: ignore
-            p.write(yc)
-        elif how == FileType.JSON:
-            jc = json.dumps(item, indent=2) + "\n"
-            if bytes_:
-                jc = jc.encode("utf-8")  # type: ignore
-            p.write(jc)
-        elif how == FileType.JSONLD:
-            for subitem in item:
-                jc = json.dumps(subitem) + "\n"
-                if bytes_:
-                    jc = jc.encode("utf-8")  # type: ignore
-                p.write(jc)
-        elif how == FileType.CSV and (
-            isinstance(item, pd.DataFrame) or isinstance(item, pd.Series)
-        ):
-            r = item.to_csv()
-            if bytes_:
-                r = r.encode("utf-8")  # type: ignore
-            p.write(r)
-        elif how == FileType.TXT:
-            p.write(str(item))
-
-    @classmethod
-    def _open_pointer(cls, p: io.BytesIO | gzip.GzipFile, how: FileType, **kwargs):
-        """Read data from file pointer in specified format.
-
-        Args:
-            p: File pointer
-            how: FileType indicating format to read
-            **kwargs: Additional arguments passed to readers
-
-        Returns:
-            Data read from file in appropriate format
-
-        Raises:
-            ValueError: If trying to read gzipped env files
-        """
-        if how == FileType.PICKLE:
-            r = pickle.load(p)
-        elif how == FileType.YAML:
-            r = yaml.load(p, Loader=yaml.FullLoader)
-        elif how == FileType.JSON:
-            r = json.load(p)
-        elif how == FileType.JSONLD:
-            r = [json.loads(s.decode()) for s in p.readlines()]
-        elif how == FileType.CSV:
-            r = pd.read_csv(p, **kwargs)  # type: ignore[arg-type]
-        elif how == FileType.TXT:
-            r = p.read().decode()
-        elif how == FileType.ENV:
-            if isinstance(p, io.BytesIO):
-                config = io.StringIO(p.getvalue().decode("UTF-8"))
-                r = load_dotenv(stream=config)
-            else:
-                raise ValueError("Will not read gzipped env files")
-        else:
-            r = dict()
-        return r
+    Example:
+        >>> data = FileHandle.load("config.yaml")
+        >>> FileHandle.dump(data, "out/config.json.gz", mkdir=True)
+    """
 
     @classmethod
     def load(
-        cls,
-        ppath: str | pathlib.Path | None = None,
-        pname: str | None = None,
-        how: FileType = FileType.YAML,
-        **kwargs,
-    ):
+        cls, path: PathLike, *, how: FileType | str | None = None, **kwargs: Any
+    ) -> Any:
+        """Read a file from disk.
+
+        Args:
+            path: File to read; ``~`` is expanded.
+            how: Format override; by default inferred from the extension.
+            **kwargs: Passed to ``pandas.read_csv`` for CSV/TSV. Any other
+                format rejects extra arguments.
+
+        Returns:
+            The parsed contents (see the class docstring for types).
+
+        Raises:
+            ValueError: If the format cannot be inferred.
+            TypeError: For keyword arguments the format does not take.
         """
-
-        :param ppath:
-        :param pname:
-        :param how:
-        :param kwargs:
-        :return:
-        """
-
-        compression = kwargs.pop("compression", None)
-        fpath: str | pathlib.Path | None = kwargs.pop("fpath", None)
-
-        # assume loading from a package
-        if pname is not None:
-            lemmas = suffixes(pname)
-            if lemmas[-1] == ".gz":
-                compression = "gz"
-                how_ = cls._find_mode(lemmas[-2])
-            else:
-                how_ = cls._find_mode(lemmas[-1])
-            if how_:
-                how = how_
-            if ppath is not None and isinstance(ppath, str):
-                bytes_ = pkgutil.get_data(ppath, pname)
-            else:
-                raise ValueError(
-                    "package name provided, package path (as a string) needed"
-                )
-
-        # interpret as filesystem load
-        else:
-            if fpath is None:
-                if ppath is not None:
-                    fpath = ppath
-                else:
-                    raise ValueError("either fpath or ppath should be provided")
-            fpath = pathlib.Path(fpath).expanduser().as_posix()
-            lemmas = suffixes(fpath)
-            if lemmas[-1] == ".gz":
-                compression = "gz"
-                how_ = cls._find_mode(lemmas[-2])
-            else:
-                how_ = cls._find_mode(lemmas[-1])
-            if how_:
-                how = how_
-            with open(fpath, "rb") as fp:
-                bytes_ = fp.read()
-
-        if bytes_ is None:
-            raise ValueError("None received as Bytes")
-
-        if compression == "gz":
-            with gzip.GzipFile(fileobj=io.BytesIO(bytes_), mode="r") as p:
-                r = cls._open_pointer(p, how, **kwargs)
-        else:
-            with io.BytesIO(bytes_) as p:
-                r = cls._open_pointer(p, how, **kwargs)
-        return r
+        fmt, _ = _resolve(path, how)
+        with open_compressed(path, "rb") as stream:
+            return _read(stream, fmt, **kwargs)
 
     @classmethod
-    def dump(cls, item, path: str | pathlib.Path, how: FileType = FileType.YAML):
-        """
+    def load_resource(
+        cls,
+        package: str,
+        name: str,
+        *,
+        how: FileType | str | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Read a data file shipped inside an importable package.
 
-        :param item:
-        :param path: if path ends with ".gz" the output will be gzip compressed
-        :param how:
-        :return:
-        """
+        Args:
+            package: Dotted package name, e.g. ``"mypkg.data"``.
+            name: File name relative to the package; may contain ``/``.
+            how: Format override; by default inferred from the extension.
+            **kwargs: As for :meth:`load`.
 
-        lemmas = suffixes(path)
-        path = pathlib.Path(path).expanduser().as_posix()
-        if lemmas[-1] == ".gz":
-            compression = "gz"
-            how_ = cls._find_mode(lemmas[-2])
+        Returns:
+            The parsed contents.
+        """
+        fmt, compression = _resolve(name, how)
+        data = resources.files(package).joinpath(name).read_bytes()
+        with io.BytesIO(data) as raw:
+            if compression is None:
+                return _read(raw, fmt, **kwargs)
+            with wrap_compressed(raw, compression, "rb") as stream:
+                return _read(stream, fmt, **kwargs)
+
+    @classmethod
+    def iter(
+        cls,
+        path: PathLike,
+        *,
+        how: FileType | str | None = None,
+        chunksize: int = 10_000,
+        **kwargs: Any,
+    ) -> Iterator[Any]:
+        """Stream a file instead of loading it whole.
+
+        Args:
+            path: File to read.
+            how: Format override; by default inferred from the extension.
+            chunksize: Rows per ``DataFrame`` chunk for CSV/TSV.
+            **kwargs: Passed to ``pandas.read_csv`` for CSV/TSV, and to
+                :func:`suthing.jsonl.iter_jsonl_stream` (``strict``,
+                ``require_object``) for JSONL.
+
+        Yields:
+            JSONL: one value per line. CSV/TSV: ``DataFrame`` chunks.
+            TXT: lines without their trailing newline.
+
+        Raises:
+            ValueError: For a format that cannot be streamed.
+        """
+        fmt, _ = _resolve(path, how)
+        if fmt not in (FileType.JSONL, FileType.CSV, FileType.TSV, FileType.TXT):
+            raise ValueError(f"{fmt.name} files cannot be streamed; use load()")
+        with open_compressed(path, "rb") as stream:
+            if fmt is FileType.JSONL:
+                yield from iter_jsonl_stream(stream, **kwargs)
+            elif fmt is FileType.TXT:
+                _no_kwargs(fmt, kwargs)
+                for raw in stream:
+                    yield raw.decode("utf-8").rstrip("\r\n")
+            else:
+                import pandas as pd
+
+                if fmt is FileType.TSV:
+                    kwargs.setdefault("sep", "\t")
+                with pd.read_csv(stream, chunksize=chunksize, **kwargs) as reader:
+                    yield from reader
+
+    @classmethod
+    def dump(
+        cls,
+        item: Any,
+        path: PathLike,
+        *,
+        how: FileType | str | None = None,
+        atomic: bool = True,
+        mkdir: bool = False,
+        **kwargs: Any,
+    ) -> pathlib.Path:
+        """Write *item* to a file, compressing by suffix.
+
+        Args:
+            item: Value to write (see the class docstring for accepted types).
+            path: Destination; ``~`` is expanded.
+            how: Format override; by default inferred from the extension.
+            atomic: Replace *path* in one step, so readers never see a
+                partial file (see :func:`suthing.fs.atomic_open`).
+            mkdir: Create missing parent directories first.
+            **kwargs: Passed to ``DataFrame.to_csv`` for CSV/TSV. Any other
+                format rejects extra arguments.
+
+        Returns:
+            The path written.
+
+        Raises:
+            ValueError: If the format cannot be inferred.
+            TypeError: If *item* does not fit the format, or for keyword
+                arguments the format does not take.
+        """
+        fmt, compression = _resolve(path, how)
+        dest = pathlib.Path(path).expanduser()
+        if mkdir:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        if fmt is FileType.JSONL:
+            _no_kwargs(fmt, kwargs)
+            write = lambda stream: write_jsonl_stream(item, stream)
         else:
-            compression = None
-            how_ = cls._find_mode(lemmas[-1])
-        if how_:
-            how = how_
-        if how == FileType.PICKLE:
-            mode = "wb"
-        else:
-            mode = "w"
-        if compression == "gz":
-            if not path.endswith(".gz"):
-                path += ".gz"
-            with gzip.GzipFile(path, mode=mode) as p:
-                cls._dump_pointer(item, p, how)
-        else:
-            with open(path, mode=mode) as p:
-                cls._dump_pointer(item, p, how, bytes_=False)
+            # Encode first: a type error must not leave a truncated file behind.
+            payload = _encode(item, fmt, **kwargs)
+            write = lambda stream: stream.write(payload)
+
+        if not atomic:
+            with open_compressed(dest, "wb") as stream:
+                write(stream)
+            return dest
+        with atomic_open(dest) as raw:
+            if compression is None:
+                write(raw)
+            else:
+                with wrap_compressed(raw, compression, "wb") as stream:
+                    write(stream)
+        return dest

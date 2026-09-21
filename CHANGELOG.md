@@ -5,209 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog - Connection Configuration Library
+## [Unreleased]
 
-## Version 0.4.0 (2025-05-01)
+### Added
 
-### Breaking Changes
+- `suthing.jsonl`: `iter_jsonl` (streaming, strict or skip-and-warn), `read_jsonl` returning `(rows, errors)` with line numbers, and `write_jsonl` (append and atomic modes). All accept compressed files.
+- `suthing.hashing`: `canonical_json`, `stable_hash`, `text_hash`, `bytes_hash`, `file_hash`, `tree_hash`. `stable_hash(obj)` is byte-identical to `sha256(json.dumps(obj, sort_keys=True, separators=(",", ":")))`, so existing stored hashes stay valid.
+- `suthing.fs`: `atomic_write` / `atomic_open` (same-directory temp file + `os.replace`; keeps permissions; optional `fsync`), `open_compressed`, `expand_path`.
+- `.bz2` and `.xz` compression, plus `.zst` via the new `zstd` extra.
+- `FileHandle.load_resource(package, name)` for data shipped inside a package, and `FileHandle.iter` for streaming JSONL, text lines and CSV chunks.
+- TSV support, `.jsonl` / `.ndjson` extensions, and a `.env` writer.
+- `Timer`: live `elapsed` inside the block, `elapsed_ms`, `format(digits)`, an optional `label` and `log` callback, and decorator use.
+- `diff()` returning a `Difference` (path, expected, actual, reason) for every mismatch, with `rel_tol` / `abs_tol`, `ignore_order` and `max_diffs`.
+- `Profiler` / `profiled`: opt-in profiling through a context variable, so decorated functions no longer need a `_profiler` argument; `Profiler.summary()` gives count, total, mean, median and max per key.
+- `to_jsonable`, `batched`, `slugify`, `env_flag`, `load_env`, `setup_logging`, `utc_now_iso`, `format_duration`.
+- `py.typed` marker, Python 3.13 classifier, and a pytest step in CI.
 
-1. **Connection Type Access Changed**
-   - Before: `connection_kind.config_class()` (method call)
-   - After: `connection_kind.config_class` (property access)
-   
-   Migration:
-   ```python
-   # Before
-   config_class = ConnectionKind.ARANGO.config_class()
-   
-   # After
-   config_class = ConnectionKind.ARANGO.config_class
-   ```
+### Changed
 
-2. **Connection Configuration Creation**
-   - Before: Direct class instantiation with `hosts` parameter
-   - After: Use `url` parameter or factory with more flexible options
-   
-   Migration:
-   ```python
-   # Before
-   config = ArangoConnectionConfig(hosts="http://localhost:8529", cred_name="root", cred_pass="password")
-   
-   # After
-   config = ArangoConnectionConfig(url="http://localhost:8529", username="root", password="password")
-   # Or using factory
-   config = ConfigFactory.create_config({
-       "db_type": "arango",
-       "url": "http://localhost:8529",
-       "username": "root",
-       "password": "password"
-   })
-   ```
+- **Breaking:** `FileHandle.load(path, *, how=None, **kwargs)` takes one path. Package data moves to `load_resource(package, name)`, and the `fpath=` keyword is gone. Unexpected keyword arguments raise `TypeError` (only CSV/TSV forward them to pandas).
+- **Breaking:** an unknown extension raises `ValueError` instead of falling back to text. `how=` now overrides the extension; before, it was ignored whenever the extension was recognised.
+- **Breaking:** `.jsonld` is read and written as JSON (JSON-LD). JSON Lines use `.jsonl` / `.ndjson`, and `FileType.JSONLD` is renamed `FileType.JSONL`.
+- **Breaking:** `equals` compares lengths. It used `zip` and reported `[1, 2]` and `[1]` as equal. It now also compares sets as sets, treats `nan` as equal to `nan`, and no longer logs at ERROR level.
+- **Breaking:** loading a dotenv file returns a `dict` and leaves `os.environ` alone; use `load_env` to export it.
+- **Breaking:** YAML loads with `safe_load`. Dumps keep key order and write non-ASCII text as-is. Enums, tuples, paths, `Decimal` and similar values are written as plain YAML instead of `!!python/...` tags.
+- JSON dumps write non-ASCII text as-is and convert enums, dates, UUIDs, paths and numpy values through `to_jsonable`.
+- `FileHandle.dump` writes atomically by default, returns the written path, and takes `mkdir=`. It raises `TypeError` on a value the format cannot hold instead of writing an empty or `repr`'d file. Text into a `.gz` file works; it used to raise `TypeError`.
+- pandas is imported only when a CSV/TSV file is read or written.
 
-3. **Renamed Credential Parameters**
-   - Before: `cred_name`, `cred_pass`
-   - After: `username`, `password` (with backward compatibility)
-   
-   Migration:
-   ```python
-   # Before
-   config = Neo4jConnectionConfig(cred_name="neo4j", cred_pass="password")
-   
-   # After (preferred)
-   config = Neo4jConnectionConfig(username="neo4j", password="password")
-   # Old params still work but are deprecated
-   config = Neo4jConnectionConfig(cred_name="neo4j", cred_pass="password")  # Still works
-   ```
+### Removed
 
-   - Before: `ip_addr`
-   - After: `hostname`
+- **Breaking:** `secureit`, `timeit`, `Report`, `Return`, `SProfiler`, `profile` and the `suthing.decorate` module. Use `Profiler` / `profiled` for profiling and `Timer` for timing.
+- Unused runtime dependencies `dataclass-wizard` and `strenum`. `mkdocs-gen-files` moves to the `docs` dependency group.
 
-   - Before: WSGIConfig.host
-   - After: WSGIConfig.listen_addr
+## [0.5.1] - 2026-02-01
 
-   
-   Migration:
-   ```python
-   # Before
-   config = Neo4jConnectionConfig(cred_name="neo4j", cred_pass="password")
-   
-   # After (preferred)
-   config = Neo4jConnectionConfig(username="neo4j", password="password")
-   # Old params still work but are deprecated
-   config = Neo4jConnectionConfig(cred_name="neo4j", cred_pass="password")  # Still works
-   ```
-  
+### Changed
 
-4. **URL Parsing Changes**
-   - Before: Custom parsing with string operations
-   - After: Standard library `urlparse` for robust URL handling
-   
-   Migration:
-   ```python
-   # Before - URL components were extracted with custom string operations
-   # After - Just use the url parameter and components are automatically extracted
-   config = WSGIConfig(url="http://localhost:5000/api/v1")
-   print(config.protocol)  # "http"
-   print(config.ip_addr)   # "localhost"
-   print(config.port)      # "5000"
-   print(config.path)      # "/api/v1"
-   ```
+- Require Python ≥3.11 (drop 3.10).
+- Drop the upper pin on `dataclass-wizard`.
+- Add `ty` to the `dev` dependency group for type checking.
 
-5. **Changed `hosts` Parameter to `url`**
-   - Before: Primary URL parameter was named `hosts`
-   - After: Primary URL parameter is named `url`
-   
-   Migration:
-   ```python
-   # Before
-   config = ProtoConnectionConfig(hosts="http://localhost:8080")
-   
-   # After
-   config = ProtoConnectionConfig(url="http://localhost:8080")
-   ```
+## [0.5.0] - 2025-11-09
 
-### New Features
+### Removed
 
-1. **Direct URL-based Configuration**
-   ```python
-   # Create config with just a URL
-   config = ConfigFactory.create_config(url="neo4j://neo4j:password@localhost:7687/mydb")
-   ```
+- **Breaking:** remove the `suthing.connection` package (`ConnectionConfig`, `ConfigFactory`, and DB/WSGI connection configs). Connection configuration no longer ships with this library.
+- Dedicated pytest GitHub Actions workflow; checks run through pre-commit.
 
-2. **Improved Factory with Type Inference**
-   ```python
-   # Factory now tries to infer connection type from URL
-   config = ConfigFactory.create_config(url="http://localhost:8529/_db/mydb")  # Will infer ArangoDB if "arango" is in URL
-   ```
+## [0.4.0] - 2025-05-01
 
-3. **Expanded File Handling**
-   ```python
-   # Load configuration from JSON or YAML
-   config = ConfigFactory.create_config(path="config.json")
-   config = ConfigFactory.create_config(path="config.yaml")
-   
-   # Save configuration
-   from suthing import FileHandle
-   FileHandle.save(config.__dict__, "config.json")
-   ```
-
-4. **First-Class Support for Connection Base Class**
-   ```python
-   # Use the factory with automatic type detection
-   from suthing import ConnectionConfig
-   config_dict = {"db_type": "neo4j", "url": "neo4j://localhost:7687"}
-   config = ConnectionConfig.from_dict(config_dict)
-   ```
-
-### Other Improvements
-
-1. **Better Type Annotations**
-   ```python
-   from typing import Dict, Optional
-   
-   # Types are now properly annotated
-   def process_config(config: ConnectionConfig) -> Dict[str, Optional[str]]:
-       return {
-           "type": config.connection_type.value if config.connection_type else None,
-           "url": config.url,
-           "database": getattr(config, "database", None)
-       }
-   ```
-
-2. **Enhanced Error Handling**
-   ```python
-   # More specific error messages
-   try:
-       config = ConnectionConfig.from_dict({"db_type": "unknown"})
-   except ValueError as e:
-       print(e)  # "Connection type 'unknown' not supported. Should be one of: ['arango', 'neo4j', 'wsgi']"
-   ```
-
-
-## Migration Guide
-
-### Step 2: Update URL Parameters
-```python
-# Before
-config = Neo4jConnectionConfig(hosts="http://localhost:7687", cred_name="neo4j", cred_pass="pass")
-
-# After
-config = Neo4jConnectionConfig(url="http://localhost:7687", username="neo4j", password="pass")
-```
-
-### Step 3: Update Factory Usage
-```python
-# Before
-config = ConfigFactory.create_config(dict_like={"db_type": "arango", "hosts": "http://localhost:8529"})
-
-# After
-config = ConfigFactory.create_config(dict_like={"db_type": "arango", "url": "http://localhost:8529"})
-# Or more directly
-config = ConfigFactory.create_config(url="http://localhost:8529")
-```
-
-### Step 4: Update Connection Type Access
-```python
-# Before
-config_class = db_type.config_class()
-
-# After
-config_class = db_type.config_class
-```
-
+Historical release that reshaped the connection-configuration API (URL/`username`/`password` parameters, factory changes). That API was removed entirely in [0.5.0](#050---2025-11-09).
 
 ## [0.3.0] - 2025-01-15
+
 - published on pypi
 
-
 ## [0.2.4] - 2023-09-01
+
 - FileHandle
   - added support for reading .env files and pushing them to environment
 
-
 ## [0.2.3] - 2023-08-30
+
 - switched to python 3.10
 - FileHandle
   - added support for reading txt files by default
-  - if a single argument to FileHandle.load() is not named it is interpreted as filepath 
-
+  - if a single argument to FileHandle.load() is not named it is interpreted as filepath

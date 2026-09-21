@@ -1,8 +1,8 @@
 # Welcome to Suthing
 
-SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of useful classes and decorators.  
+SUThing /ˈsu.θɪŋ/ or /ˈsʌ.θɪŋ/ (Some Useful Things) is a collection of small, dependable utilities.  
 
-A Python utility package providing tools for file handling, timing, profiling, and data comparison.
+A Python utility package providing tools for file handling, timing, profiling, data comparison and hashing.
 
 ![Python](https://img.shields.io/badge/python-%3E=3.11-blue?logo=python)
 [![PyPI version](https://badge.fury.io/py/suthing.svg)](https://badge.fury.io/py/suthing)
@@ -12,10 +12,11 @@ A Python utility package providing tools for file handling, timing, profiling, a
 
 ## Features
 
-- **File Handling**: One-line file reading/writing with file format inference from provided extension (YAML, JSON, CSV, pickle, gz etc.)
-- **Performance Measurement**: Simple timer utilities and profiling decorators
-- **Data Comparison**: Deep comparison of nested data structures
-- **Error Handling**: Decorators for secure function execution and error tracking
+- **File Handling**: one-line reading and writing with the format inferred from the extension (YAML, JSON, JSON Lines, CSV/TSV, text, dotenv, pickle), transparent `.gz`/`.bz2`/`.xz`/`.zst` compression, atomic writes and streaming reads
+- **Timing and Profiling**: a `Timer` context manager/decorator and opt-in function profiling with per-key statistics
+- **Data Comparison**: deep `diff` of nested structures that reports the path of every difference, with numeric tolerance and order-insensitive matching
+- **Hashing**: stable hashes of JSON-like values, text, files and directory trees
+- **Small Helpers**: `batched`, `slugify`, `to_jsonable`, `env_flag`, `setup_logging`, `utc_now_iso`
 
 ## Quick Start
 
@@ -45,10 +46,11 @@ Explore the documentation to learn more about Suthing's features:
 
 ## Requirements
 
-- Python 3.10+
-- pandas
+- Python 3.11+
+- pandas (imported only for CSV/TSV)
 - PyYAML
 - python-dotenv
+- optional: `zstandard` for `.zst` files (`pip install "suthing[zstd]"`)
 
 ## Contributing
 
